@@ -1,19 +1,19 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Button, StyleSheet, View } from "react-native";
-import { Customerly, CustomerlyMessengerProvider } from "react-native-customerly-sdk";
+// eslint-disable-next-line import/no-unresolved
+import { Customerly, CustomerlyProvider } from "react-native-customerly-sdk";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function App() {
-  useEffect(() => {
-    Customerly.load();
-  }, []);
-
   return (
-    <CustomerlyMessengerProvider>
-      <View style={styles.container}>
-        <Button title="Open Messenger" onPress={() => Customerly.open()} />
-        <Button title="Close Messenger" onPress={() => Customerly.close()} />
-      </View>
-    </CustomerlyMessengerProvider>
+    <SafeAreaProvider>
+      <CustomerlyProvider app_id={"936fd1dc"}>
+        <View style={styles.container}>
+          <Button title="Open Messenger" onPress={() => Customerly.show()} />
+          <Button title="Close Messenger" onPress={() => Customerly.hide()} />
+        </View>
+      </CustomerlyProvider>
+    </SafeAreaProvider>
   );
 }
 

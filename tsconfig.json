@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "react-native-customerly-sdk": ["./src/index"]
-    },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
+    "baseUrl": ".",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
@@ -18,6 +15,9 @@
     "noStrictGenericChecks": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "paths": {
+      "react-native-customerly-sdk": ["./src/index"]
+    },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,

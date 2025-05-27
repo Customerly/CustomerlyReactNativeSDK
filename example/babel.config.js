@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable import/no-nodejs-modules */
 const path = require("path");
 const pak = require("../package.json");
 
