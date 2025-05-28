@@ -1,3 +1,4 @@
+import { CustomerlyCallbacks } from "./callbacks";
 import { CustomerlySettings } from "./customerly-settings";
 
 export type SdkMethods = {
@@ -15,4 +16,39 @@ export type SdkMethods = {
   attribute: (name: string, value: unknown) => void;
   getUnreadMessagesCount: () => Promise<number>;
   getUnreadConversationsCount: () => Promise<number>;
+  setOnChatClosed: (callback: CustomerlyCallbacks["onChatClosed"]) => void;
+  setOnChatOpened: (callback: CustomerlyCallbacks["onChatOpened"]) => void;
+  setOnHelpCenterArticleOpened: (callback: CustomerlyCallbacks["onHelpCenterArticleOpened"]) => void;
+  setOnLeadGenerated: (callback: CustomerlyCallbacks["onLeadGenerated"]) => void;
+  setOnMessengerInitialized: (callback: CustomerlyCallbacks["onMessengerInitialized"]) => void;
+  setOnNewConversation: (callback: CustomerlyCallbacks["onNewConversation"]) => void;
+  setOnNewMessageReceived: (callback: CustomerlyCallbacks["onNewMessageReceived"]) => void;
+  setOnNewConversationReceived: (callback: CustomerlyCallbacks["onNewConversationReceived"]) => void;
+  setOnProfilingQuestionAnswered: (callback: CustomerlyCallbacks["onProfilingQuestionAnswered"]) => void;
+  setOnProfilingQuestionAsked: (callback: CustomerlyCallbacks["onProfilingQuestionAsked"]) => void;
+  setOnRealtimeVideoAnswered: (callback: CustomerlyCallbacks["onRealtimeVideoAnswered"]) => void;
+  setOnRealtimeVideoCanceled: (callback: CustomerlyCallbacks["onRealtimeVideoCanceled"]) => void;
+  setOnRealtimeVideoReceived: (callback: CustomerlyCallbacks["onRealtimeVideoReceived"]) => void;
+  setOnRealtimeVideoRejected: (callback: CustomerlyCallbacks["onRealtimeVideoRejected"]) => void;
+  setOnSurveyAnswered: (callback: CustomerlyCallbacks["onSurveyAnswered"]) => void;
+  setOnSurveyPresented: (callback: CustomerlyCallbacks["onSurveyPresented"]) => void;
+  setOnSurveyRejected: (callback: CustomerlyCallbacks["onSurveyRejected"]) => void;
+  removeOnChatClosed: () => void;
+  removeOnChatOpened: () => void;
+  removeOnHelpCenterArticleOpened: () => void;
+  removeOnLeadGenerated: () => void;
+  removeOnMessengerInitialized: () => void;
+  removeOnNewConversation: () => void;
+  removeOnNewMessageReceived: () => void;
+  removeOnNewConversationReceived: () => void;
+  removeOnProfilingQuestionAnswered: () => void;
+  removeOnProfilingQuestionAsked: () => void;
+  removeOnRealtimeVideoAnswered: () => void;
+  removeOnRealtimeVideoCanceled: () => void;
+  removeOnRealtimeVideoReceived: () => void;
+  removeOnRealtimeVideoRejected: () => void;
+  removeOnSurveyAnswered: () => void;
+  removeOnSurveyPresented: () => void;
+  removeOnSurveyRejected: () => void;
+  removeAllCallbacks: () => void;
 };
