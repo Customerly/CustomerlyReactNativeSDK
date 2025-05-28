@@ -21,7 +21,7 @@ export const useNotifications = (): UseNotificationsPayload => {
   const handleNotificationPress = (notification: Notification) => {
     if (isMessage(notification.data)) {
       Customerly.navigateToConversation(notification.data.conversationId);
-      Customerly.show();
+      Customerly.show(true);
     }
   };
 

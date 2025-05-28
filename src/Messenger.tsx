@@ -1,16 +1,8 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import {
-  Animated,
-  BackHandler,
-  Dimensions,
-  Easing,
-  KeyboardAvoidingView,
-  Linking,
-  StyleSheet,
-  useColorScheme,
-} from "react-native";
+import { Animated, BackHandler, Dimensions, Easing, Linking, StyleSheet, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
+import KeyboardAvoidingView from "./components/KeyboardAvoidingView";
 import { useNotifications } from "./hooks/useNotifications";
 import { CustomerlyCallbacks } from "./typings/callbacks";
 import { CustomerlySettings } from "./typings/customerly-settings";
@@ -399,8 +391,8 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(({ colorScheme: colorSc
         },
       ]}
     >
-      <KeyboardAvoidingView style={styles.container} behavior={"height"} keyboardVerticalOffset={0}>
-        <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === "dark" ? "#000000" : "#FFFFFF" }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === "dark" ? "#000000" : "#FFFFFF" }]}>
+        <KeyboardAvoidingView>
           <WebView
             allowFileAccess
             domStorageEnabled
@@ -415,8 +407,8 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(({ colorScheme: colorSc
             source={{ uri: "https://customerly.io/", baseUrl: "https://customerly.io/", html: createHTML(settings) }}
             thirdPartyCookiesEnabled={true}
           />
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </Animated.View>
   );
 });
