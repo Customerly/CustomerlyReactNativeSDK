@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/release-it/schema/release-it.json",
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "push": true,
+    "requireBranch": "master",
+    "tagName": "v${version}"
+  },
+  "github": {
+    "release": true
+  },
+  "hooks": {
+    "after:bump": ["yarn auto-changelog -p"],
+    "before:init": ["yarn check-ts"]
+  },
+  "npm": {
+    "publish": true
+  }
+}

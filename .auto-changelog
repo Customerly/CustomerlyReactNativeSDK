@@ -1,0 +1,5 @@
+{
+  "commitLimit": false,
+  "output": "CHANGELOG.md",
+  "template": "conventional"
+}

@@ -1,6 +1,6 @@
 {
   "name": "react-native-customerly-sdk",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Customerly SDK for integration in React Native app",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
@@ -27,7 +27,8 @@
   "scripts": {
     "check-ts": "tsc --noEmit",
     "build": "bob build",
-    "release": "rm -rf lib && yarn build && release-it",
+    "build:clean": "rm -rf lib && yarn build",
+    "release": "release-it",
     "example": "yarn --cwd example",
     "prepare": "bob build"
   },
@@ -37,6 +38,7 @@
     "@eslint/json": "^0.12.0",
     "@notifee/react-native": "^9.1.8",
     "@types/react": "^19.1.5",
+    "auto-changelog": "^2.5.0",
     "copyfiles": "^2.4.1",
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
@@ -54,6 +56,7 @@
     "react-native-builder-bob": "^0.40.11",
     "react-native-safe-area-context": "^5.4.1",
     "react-native-webview": "^13.13.5",
+    "release-it": "^19.0.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1"
   },
