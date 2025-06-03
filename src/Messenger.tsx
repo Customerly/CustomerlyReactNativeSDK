@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { Animated, BackHandler, Dimensions, Easing, Linking, StyleSheet, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
@@ -32,6 +32,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(({ colorScheme: colorSc
   >({});
 
   const colorScheme = colorSchemeProps ?? defaultColorScheme;
+  const html = useMemo(() => createHTML(settings), [settings]);
 
   const evaluateJavaScript = useCallback((script: string) => {
     if (!webViewRef.current) {
@@ -404,7 +405,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(({ colorScheme: colorSc
             onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
             ref={webViewRef}
             sharedCookiesEnabled={true}
-            source={{ uri: "https://customerly.io/", baseUrl: "https://customerly.io/", html: createHTML(settings) }}
+            source={{ uri: "https://customerly.io/", baseUrl: "https://customerly.io/", html }}
             thirdPartyCookiesEnabled={true}
           />
         </KeyboardAvoidingView>
