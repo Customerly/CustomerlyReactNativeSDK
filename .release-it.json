@@ -10,8 +10,8 @@
     "release": true
   },
   "hooks": {
-    "after:bump": ["yarn auto-changelog -p"],
-    "before:init": ["yarn check-ts"]
+    "after:bump": ["yarn auto-changelog -p", "git add CHANGELOG.md"],
+    "before:init": ["yarn check-ts", "yarn build:clean"]
   },
   "npm": {
     "publish": true
