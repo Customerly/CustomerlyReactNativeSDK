@@ -1,7 +1,7 @@
 ## Changelog
 
-### 1.0.1
+### 1.0.2
 
-#### General Changes
+#### Fixes
 
-- ci: add GitHub Action to build and publish npm package @Giorgio Bertolotti 
+- fix: improve typings to use correct javascript naming convention @Giorgio Bertolotti 

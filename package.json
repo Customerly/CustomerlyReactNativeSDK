@@ -1,6 +1,6 @@
 {
   "name": "react-native-customerly-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Customerly SDK for integration in React Native app",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
