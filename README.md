@@ -60,6 +60,15 @@ npx expo install react-native-webview react-native-safe-area-context @notifee/re
 }
 ```
 
+Before continuing, run the following command to ensure all native code is rebuilt correctly:
+
+```bash
+npx expo prebuild --clean
+```
+
+This helps avoid build issues, especially after adding or updating native dependencies.
+
+
 ## Basic Usage
 
 Wrap your app with `CustomerlyProvider` (it must be wrapped in a `SafeAreaProvider`) and use the `Customerly` API:
@@ -72,7 +81,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 export default function App() {
   return (
     <SafeAreaProvider>
-      <CustomerlyProvider app_id="YOUR_APP_ID">
+      <CustomerlyProvider appId="YOUR_APP_ID">
         {/* Your app content */}
       </CustomerlyProvider>
     </SafeAreaProvider>
@@ -88,8 +97,8 @@ import { Customerly } from "react-native-customerly-sdk";
 Customerly.show();
 
 Customerly.update({
-  app_id: "YOUR_APP_ID",
-  user_id: "123",
+  appId: "YOUR_APP_ID",
+  userId: "123",
   email: "user@example.com",
   name: "John Doe",
 });
@@ -111,7 +120,7 @@ Customerly.requestNotificationPermissionIfNeeded();
 Updates the Customerly SDK settings.
 
 ```tsx
-Customerly.update({ app_id: "YOUR_APP_ID" });
+Customerly.update({ appId: "YOUR_APP_ID" });
 ```
 
 #### requestNotificationPermissionIfNeeded

@@ -28,8 +28,8 @@ const App = () => {
           title="Login User"
           onPress={() =>
             Customerly.update({
-              app_id: "YOUR_APP_ID",
-              user_id: "123",
+              appId: "YOUR_APP_ID",
+              userId: "123",
               email: "gb@customerly.io",
               name: "Giorgio",
             })
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
 export default function AppWrapper() {
   return (
     <SafeAreaProvider>
-      <CustomerlyProvider app_id={"YOUR_APP_ID"}>
+      <CustomerlyProvider appId={"YOUR_APP_ID"}>
         <App />
       </CustomerlyProvider>
     </SafeAreaProvider>

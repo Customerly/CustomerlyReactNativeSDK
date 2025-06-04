@@ -5,9 +5,10 @@ import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-we
 import KeyboardAvoidingView from "./components/KeyboardAvoidingView";
 import { useNotifications } from "./hooks/useNotifications";
 import { CustomerlyCallbacks } from "./typings/callbacks";
-import { CustomerlySettings } from "./typings/customerly-settings";
+import { CustomerlySettings, InternalCustomerlySettings } from "./typings/customerly-settings";
 import { SdkMethods } from "./typings/sdk-methods";
 import { safelyParseNumber } from "./utils/number";
+import { getInternalSettings } from "./utils/settings";
 import { createHTML } from "./utils/webview";
 
 export type MessengerProps = CustomerlySettings & {
@@ -24,7 +25,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(({ colorScheme: colorSc
   const webViewRef = useRef<WebView>(null);
   const slideAnimationRef = useRef(new Animated.Value(0)).current;
 
-  const [settings, setSettings] = useState(settingsProps);
+  const [settings, setSettings] = useState<InternalCustomerlySettings>(getInternalSettings(settingsProps));
   const [visible, setVisible] = useState(false);
   const [callbacks, setCallbacks] = useState<CustomerlyCallbacks>({});
   const [pendingInvocations, setPendingInvocations] = useState<
@@ -135,7 +136,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(({ colorScheme: colorSc
     ref,
     () =>
       ({
-        update: (settings: CustomerlySettings) => setSettings(settings),
+        update: (settings: CustomerlySettings) => setSettings(getInternalSettings(settings)),
         show,
         hide,
         back,

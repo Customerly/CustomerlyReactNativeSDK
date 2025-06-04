@@ -10,7 +10,7 @@ export const CustomerlyProvider: FC<CustomerlyProviderProps> = ({ children, colo
   return (
     <>
       {children}
-      <Messenger key={settings.app_id} colorScheme={colorScheme} ref={messengerRef} {...settings} />
+      <Messenger key={settings.appId} colorScheme={colorScheme} ref={messengerRef} {...settings} />
     </>
   );
 };

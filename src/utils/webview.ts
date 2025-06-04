@@ -1,6 +1,6 @@
-import { CustomerlySettings } from "../typings/customerly-settings";
+import { InternalCustomerlySettings } from "../typings/customerly-settings";
 
-export const createHTML = (settings: CustomerlySettings) => {
+export const createHTML = (settings: InternalCustomerlySettings) => {
   const finalSettings = { ...settings, sdkMode: true, disableAutofocus: true };
 
   return `

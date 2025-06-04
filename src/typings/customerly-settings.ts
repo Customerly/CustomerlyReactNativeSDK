@@ -1,4 +1,21 @@
 export type CustomerlySettings = {
+  appId: string;
+  userId?: string;
+  name?: string;
+  email?: string;
+  emailHash?: string;
+  accentColor?: string;
+  contrastColor?: string;
+  attachmentsAvailable?: boolean;
+  singleConversation?: boolean;
+  lastPageViewed?: string;
+  forceLead?: boolean;
+  attributes?: Record<string, unknown>;
+  company?: Company;
+  events?: Event[];
+};
+
+export type InternalCustomerlySettings = {
   app_id: string;
   user_id?: string;
   name?: string;
