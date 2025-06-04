@@ -36,7 +36,7 @@ yarn add react-native-webview react-native-safe-area-context @notifee/react-nati
 Using Expo?
 
 ```bash
-npx expo install react-native-webview react-native-safe-area-context @notifee/react-native
+npx expo install expo-build-properties react-native-webview react-native-safe-area-context @notifee/react-native
 ```
 
 > **IMPORTANT**
