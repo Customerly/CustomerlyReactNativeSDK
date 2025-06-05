@@ -6,10 +6,10 @@ export type CustomerlyCallbacks = {
   onMessengerInitialized?: () => void;
   onNewConversation?: (message: string, attachments: AttachmentPayload[]) => void;
   onNewMessageReceived?: (
-    accountId: number,
-    message: string,
+    accountId: number | undefined,
+    message: string | undefined,
     timestamp: number,
-    userId: number,
+    userId: number | undefined,
     conversationId: number,
   ) => void;
   onNewConversationReceived?: (conversationId: number) => void;

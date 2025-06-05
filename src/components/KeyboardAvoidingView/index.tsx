@@ -5,12 +5,13 @@ import {
   KeyboardAvoidingView as RNKeyboardAvoidingView,
   KeyboardAvoidingViewProps as RNKeyboardAvoidingViewProps,
   StyleSheet,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const IosKeyboardAvoidingView = ({ style, ...props }: RNKeyboardAvoidingViewProps) => (
-  <RNKeyboardAvoidingView behavior={"height"} keyboardVerticalOffset={0} style={[styles.container, style]} {...props} />
-);
+const IosKeyboardAvoidingView = ({ style, ...props }: RNKeyboardAvoidingViewProps) => {
+  return <View style={[styles.container, style]} {...props} />;
+};
 
 const AndroidKeyboardAvoidingView = ({ style, ...props }: RNKeyboardAvoidingViewProps) => {
   const { top } = useSafeAreaInsets();

@@ -1,7 +1,7 @@
 export type Message = {
-  accountId: number;
-  message: string;
+  accountId?: number;
+  message?: string;
   timestamp: number;
-  userId: number;
+  userId?: number;
   conversationId: number;
 };

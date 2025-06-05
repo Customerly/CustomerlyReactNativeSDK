@@ -1,4 +1,4 @@
-import notifee, { AuthorizationStatus, EventType, Notification } from "@notifee/react-native";
+import notifee, { AndroidImportance, AuthorizationStatus, EventType, Notification } from "@notifee/react-native";
 import { useCallback, useEffect, useMemo } from "react";
 import {
   NOTIFICATION_ANDROID_PRESS_ACTION_ID,
@@ -57,6 +57,7 @@ export const useNotifications = (): UseNotificationsPayload => {
     const channelId = await notifee.createChannel({
       id: NOTIFICATION_CHANNEL_ID,
       name: NOTIFICATION_CHANNEL_NAME,
+      importance: AndroidImportance.HIGH,
     });
 
     await notifee.displayNotification({
@@ -65,6 +66,7 @@ export const useNotifications = (): UseNotificationsPayload => {
       android: {
         channelId,
         pressAction: { id: NOTIFICATION_ANDROID_PRESS_ACTION_ID },
+        importance: AndroidImportance.HIGH,
       },
     });
   }, []);

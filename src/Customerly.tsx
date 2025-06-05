@@ -1,4 +1,4 @@
-import notifee, { AuthorizationStatus } from "@notifee/react-native";
+import notifee from "@notifee/react-native";
 import { createRef } from "react";
 import { CustomerlyCallbacks } from "./typings/callbacks";
 import { CustomerlySettings } from "./typings/customerly-settings";
@@ -19,10 +19,7 @@ const guardInstance = <T extends (...args: any[]) => any>(fn: T): T => {
 
 export const Customerly: SdkMethods & { requestNotificationPermissionIfNeeded: () => Promise<void> } = {
   requestNotificationPermissionIfNeeded: async () => {
-    const notificationSettings = await notifee.requestPermission();
-    if (notificationSettings.authorizationStatus !== AuthorizationStatus.AUTHORIZED) {
-      return;
-    }
+    await notifee.requestPermission();
   },
   update: guardInstance((settings: CustomerlySettings) => messengerRef.current!.update(settings)),
   show: guardInstance((withoutNavigation?: boolean) => messengerRef.current!.show(withoutNavigation)),

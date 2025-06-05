@@ -6,7 +6,8 @@
         "foregroundImage": "./assets/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.giorgiozem.example"
+      "package": "com.giorgiozem.example",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "icon": "./assets/icon.png",
     "ios": {
