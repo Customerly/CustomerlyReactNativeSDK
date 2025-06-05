@@ -1,7 +1,7 @@
 ## Changelog
 
-### 1.0.2
+### 1.0.3
 
 #### Fixes
 
-- fix: improve typings to use correct javascript naming convention @Giorgio Bertolotti 
+- fix: onNewMessageReceived typings with some values nullable @Giorgio Bertolotti 
