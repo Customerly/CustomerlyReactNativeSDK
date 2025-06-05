@@ -1,13 +1,18 @@
 import notifee, { AndroidImportance, AuthorizationStatus, EventType, Notification } from "@notifee/react-native";
 import { useCallback, useEffect, useMemo } from "react";
 import {
+  DEFAULT_NOTIFICATION_CHANNEL_ID,
+  DEFAULT_NOTIFICATION_CHANNEL_NAME,
   NOTIFICATION_ANDROID_PRESS_ACTION_ID,
-  NOTIFICATION_CHANNEL_ID,
-  NOTIFICATION_CHANNEL_NAME,
 } from "../constants/notifications";
 import { Customerly } from "../Customerly";
 import { Message } from "../typings/message";
 import { abstractify } from "../utils/html";
+
+type UseNotificationsProps = {
+  notificationChannelId?: string;
+  notificationChannelName?: string;
+};
 
 type UseNotificationsPayload = {
   sendNotificationForNewMessage: (message: Message) => Promise<void>;
@@ -17,7 +22,10 @@ const isMessage = (data: unknown): data is Message => {
   return typeof data === "object" && data !== null && "accountId" in data && "message" in data;
 };
 
-export const useNotifications = (): UseNotificationsPayload => {
+export const useNotifications = ({
+  notificationChannelId = DEFAULT_NOTIFICATION_CHANNEL_ID,
+  notificationChannelName = DEFAULT_NOTIFICATION_CHANNEL_NAME,
+}: UseNotificationsProps = {}): UseNotificationsPayload => {
   const handleNotificationPress = (notification: Notification) => {
     if (isMessage(notification.data)) {
       Customerly.navigateToConversation(notification.data.conversationId);
@@ -48,28 +56,31 @@ export const useNotifications = (): UseNotificationsPayload => {
     })();
   }, []);
 
-  const sendNotificationForNewMessage = useCallback(async (message: Message) => {
-    const notificationSettings = await notifee.requestPermission();
-    if (notificationSettings.authorizationStatus !== AuthorizationStatus.AUTHORIZED) {
-      return;
-    }
+  const sendNotificationForNewMessage = useCallback(
+    async (message: Message) => {
+      const notificationSettings = await notifee.requestPermission();
+      if (notificationSettings.authorizationStatus !== AuthorizationStatus.AUTHORIZED) {
+        return;
+      }
 
-    const channelId = await notifee.createChannel({
-      id: NOTIFICATION_CHANNEL_ID,
-      name: NOTIFICATION_CHANNEL_NAME,
-      importance: AndroidImportance.HIGH,
-    });
-
-    await notifee.displayNotification({
-      title: abstractify(message.message),
-      data: message,
-      android: {
-        channelId,
-        pressAction: { id: NOTIFICATION_ANDROID_PRESS_ACTION_ID },
+      const channelId = await notifee.createChannel({
+        id: notificationChannelId,
+        name: notificationChannelName,
         importance: AndroidImportance.HIGH,
-      },
-    });
-  }, []);
+      });
+
+      await notifee.displayNotification({
+        title: abstractify(message.message),
+        data: message,
+        android: {
+          channelId,
+          pressAction: { id: NOTIFICATION_ANDROID_PRESS_ACTION_ID },
+          importance: AndroidImportance.HIGH,
+        },
+      });
+    },
+    [notificationChannelId, notificationChannelName],
+  );
 
   return useMemo(() => ({ sendNotificationForNewMessage }), [sendNotificationForNewMessage]);
 };

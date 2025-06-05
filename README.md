@@ -114,6 +114,21 @@ Customerly.requestNotificationPermissionIfNeeded();
 
 ## API Reference
 
+### Props
+
+| Prop                      | Type                | Required | Description                                                                  | Default                                                          |
+| ------------------------- | ------------------- | -------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `appId`                   | `string`            | Yes      | The Customerly app ID                                                        |                                                                  |
+| `colorScheme`             | `"light" \| "dark"` | No       | Your app's current color scheme                                              | System color scheme                                              |
+| `notificationChannelId`   | `string`            | No       | The ID of the notification channel to use for notifications (Android only)   | customerly-notification-channel                                  |
+| `notificationChannelName` | `string`            | No       | The name of the notification channel to use for notifications (Android only) | Customerly Notification Channel                                  |
+| `userId`                  | `string`            | No       | The user ID                                                                  | -                                                                |
+| `name`                    | `string`            | No       | The user name                                                                | -                                                                |
+| `email`                   | `string`            | No       | The user email                                                               | -                                                                |
+| `accentColor`             | `string`            | No       | The accent color                                                             | The messenger accent color configured in your project settings   |
+| `contrastColor`           | `string`            | No       | The contrast color                                                           | The messenger contrast color configured in your project settings |
+| `attachmentsAvailable`    | `boolean`           | No       | Whether attachments are available                                            | `true`                                                           |
+
 ### Initialization and Configuration
 
 #### update
