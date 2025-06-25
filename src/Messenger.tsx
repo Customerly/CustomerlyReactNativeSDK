@@ -1,5 +1,15 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Animated, BackHandler, Dimensions, Easing, Linking, StyleSheet, useColorScheme } from "react-native";
+import {
+  Animated,
+  AppState,
+  AppStateStatus,
+  BackHandler,
+  Dimensions,
+  Easing,
+  Linking,
+  StyleSheet,
+  useColorScheme,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
 import KeyboardAvoidingView from "./components/KeyboardAvoidingView";
@@ -9,6 +19,7 @@ import { CustomerlySettings, InternalCustomerlySettings } from "./typings/custom
 import { SdkMethods } from "./typings/sdk-methods";
 import { safelyParseNumber } from "./utils/number";
 import { getInternalSettings } from "./utils/settings";
+import { generateRandomString } from "./utils/string";
 import { createHTML } from "./utils/webview";
 
 export type MessengerProps = CustomerlySettings & {
@@ -23,10 +34,10 @@ const screenHeight = Dimensions.get("window").height;
 const Messenger = forwardRef<SdkMethods, MessengerProps>(
   ({ colorScheme: colorSchemeProps, notificationChannelId, notificationChannelName, ...settingsProps }, ref) => {
     const defaultColorScheme = useColorScheme();
-    const { sendNotificationForNewMessage } = useNotifications({ notificationChannelId, notificationChannelName });
 
     const webViewRef = useRef<WebView>(null);
     const slideAnimationRef = useRef(new Animated.Value(0)).current;
+    const appStateRef = useRef(AppState.currentState);
 
     const [settings, setSettings] = useState<InternalCustomerlySettings>(getInternalSettings(settingsProps));
     const [visible, setVisible] = useState(false);
@@ -34,6 +45,14 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
     const [pendingInvocations, setPendingInvocations] = useState<
       Record<string, { resolve: (value: unknown) => void; reject: (error: Error) => void }>
     >({});
+    const [webViewKey, setWebViewKey] = useState(generateRandomString(10));
+    const [isRecovering, setIsRecovering] = useState(false);
+
+    const { sendNotificationForNewMessage } = useNotifications({
+      notificationChannelId,
+      notificationChannelName,
+      settings,
+    });
 
     const colorScheme = colorSchemeProps ?? defaultColorScheme;
     const html = useMemo(() => createHTML(settings), [settings]);
@@ -55,34 +74,71 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
 
         const invocationId = Math.random().toString(36).substring(7);
 
-        setPendingInvocations((prev) => ({
-          ...prev,
-          [invocationId]: { resolve, reject },
-        }));
+        setPendingInvocations((prev) => ({ ...prev, [invocationId]: { resolve, reject } }));
 
         const wrappedScript = `
-        (async () => {
-          try {
-            const result = await (${script});
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'jsInvocationResult',
-              id: '${invocationId}',
-              result
-            }));
-          } catch (error) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'jsInvocationResult',
-              id: '${invocationId}',
-              error: error.message
-            }));
-          }
-        })();
-        true;
-      `;
+          (async () => {
+            try {
+              const result = await (${script});
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'jsInvocationResult',
+                id: '${invocationId}',
+                result
+              }));
+            } catch (error) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'jsInvocationResult',
+                id: '${invocationId}',
+                error: error.message
+              }));
+            }
+          })();
+          true;
+        `;
 
         webViewRef.current.injectJavaScript(wrappedScript);
       });
     }, []);
+
+    const healthCheck = useCallback(async () => {
+      if (!webViewRef.current || isRecovering) {
+        return;
+      }
+
+      setIsRecovering(true);
+
+      try {
+        const result = (await evaluateJavaScriptAsync(
+          "typeof customerly !== 'undefined' && typeof _customerly_sdk !== 'undefined'",
+        )) as boolean;
+
+        if (!result) {
+          setWebViewKey(generateRandomString(10));
+        }
+      } catch (error) {
+        console.warn("[Customerly] WebView health check failed:", error);
+        setWebViewKey(generateRandomString(10));
+      } finally {
+        setIsRecovering(false);
+      }
+    }, [evaluateJavaScriptAsync, isRecovering]);
+
+    useEffect(() => {
+      const handleAppStateChange = (nextAppState: AppStateStatus) => {
+        const wasBackground = appStateRef.current === "background" || appStateRef.current === "inactive";
+        const isNowActive = nextAppState === "active";
+
+        appStateRef.current = nextAppState;
+
+        if (wasBackground && isNowActive) {
+          healthCheck();
+        }
+      };
+
+      const subscription = AppState.addEventListener("change", handleAppStateChange);
+
+      return () => subscription?.remove();
+    }, [healthCheck]);
 
     const show = useCallback(
       (withoutNavigation = false) => {
@@ -139,7 +195,8 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
       ref,
       () =>
         ({
-          update: (settings: CustomerlySettings) => setSettings(getInternalSettings(settings)),
+          update: (settings: CustomerlySettings) =>
+            setSettings((currentSettings) => ({ ...currentSettings, ...getInternalSettings(settings) })),
           show,
           hide,
           back,
@@ -401,6 +458,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
         <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === "dark" ? "#000000" : "#FFFFFF" }]}>
           <KeyboardAvoidingView>
             <WebView
+              key={webViewKey}
               allowFileAccess
               domStorageEnabled
               javaScriptEnabled

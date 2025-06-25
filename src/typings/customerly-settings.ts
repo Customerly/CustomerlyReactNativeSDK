@@ -1,3 +1,19 @@
+import { Message } from "./message";
+
+export type NotificationSetup =
+  | {
+      shouldShow: false;
+      title?: never;
+      body?: never;
+    }
+  | {
+      shouldShow: true;
+      title?: string;
+      body?: string;
+      notificationChannelId?: string;
+      notificationChannelName?: string;
+    };
+
 export type CustomerlySettings = {
   appId: string;
   userId?: string;
@@ -13,6 +29,7 @@ export type CustomerlySettings = {
   attributes?: Record<string, unknown>;
   company?: Company;
   events?: Event[];
+  getNotificationSetup?: (message: Message) => NotificationSetup;
 };
 
 export type InternalCustomerlySettings = {
@@ -30,6 +47,7 @@ export type InternalCustomerlySettings = {
   attributes?: Record<string, unknown>;
   company?: Company;
   events?: Event[];
+  getNotificationSetup?: (message: Message) => NotificationSetup;
 };
 
 export type Company = {

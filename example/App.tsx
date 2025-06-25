@@ -32,6 +32,10 @@ const App = () => {
               userId: "123",
               email: "gb@customerly.io",
               name: "Giorgio",
+              getNotificationSetup: (message) => {
+                console.log(message);
+                return { shouldShow: true };
+              },
             })
           }
         />
