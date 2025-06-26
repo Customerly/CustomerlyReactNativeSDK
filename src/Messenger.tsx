@@ -29,6 +29,7 @@ export type MessengerProps = CustomerlySettings & {
 };
 
 const ANIMATION_DURATION = 350;
+const BACKGROUND_RELOAD_TIMEOUT = 4 * 60 * 1000; // 4 minutes in milliseconds
 const screenHeight = Dimensions.get("window").height;
 
 const Messenger = forwardRef<SdkMethods, MessengerProps>(
@@ -46,7 +47,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
       Record<string, { resolve: (value: unknown) => void; reject: (error: Error) => void }>
     >({});
     const [webViewKey, setWebViewKey] = useState(generateRandomString(10));
-    const [isRecovering, setIsRecovering] = useState(false);
+    const [backgroundTimestamp, setBackgroundTimestamp] = useState<number | null>(null);
 
     const { sendNotificationForNewMessage } = useNotifications({
       notificationChannelId,
@@ -100,45 +101,40 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
       });
     }, []);
 
-    const healthCheck = useCallback(async () => {
-      if (!webViewRef.current || isRecovering) {
+    const checkAndReloadIfNeeded = useCallback(() => {
+      if (!backgroundTimestamp) {
         return;
       }
 
-      setIsRecovering(true);
+      const now = Date.now();
+      const timeInBackground = now - backgroundTimestamp;
 
-      try {
-        const result = (await evaluateJavaScriptAsync(
-          "typeof customerly !== 'undefined' && typeof _customerly_sdk !== 'undefined'",
-        )) as boolean;
-
-        if (!result) {
-          setWebViewKey(generateRandomString(10));
-        }
-      } catch (error) {
-        console.warn("[Customerly] WebView health check failed:", error);
+      if (timeInBackground > BACKGROUND_RELOAD_TIMEOUT) {
         setWebViewKey(generateRandomString(10));
-      } finally {
-        setIsRecovering(false);
+        setBackgroundTimestamp(null);
       }
-    }, [evaluateJavaScriptAsync, isRecovering]);
+    }, [backgroundTimestamp]);
 
     useEffect(() => {
       const handleAppStateChange = (nextAppState: AppStateStatus) => {
-        const wasBackground = appStateRef.current === "background" || appStateRef.current === "inactive";
+        const wasActive = appStateRef.current === "active";
         const isNowActive = nextAppState === "active";
 
         appStateRef.current = nextAppState;
 
-        if (wasBackground && isNowActive) {
-          healthCheck();
+        if (wasActive && !isNowActive) {
+          // App is going to background
+          setBackgroundTimestamp(Date.now());
+        } else if (!wasActive && isNowActive) {
+          // App is coming back to foreground
+          checkAndReloadIfNeeded();
         }
       };
 
       const subscription = AppState.addEventListener("change", handleAppStateChange);
 
       return () => subscription?.remove();
-    }, [healthCheck]);
+    }, [checkAndReloadIfNeeded]);
 
     const show = useCallback(
       (withoutNavigation = false) => {
