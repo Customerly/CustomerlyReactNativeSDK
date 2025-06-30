@@ -34,6 +34,7 @@ const AndroidKeyboardAvoidingView = ({ style, ...props }: RNKeyboardAvoidingView
 
   return (
     <RNKeyboardAvoidingView
+      renderToHardwareTextureAndroid
       behavior={"height"}
       keyboardVerticalOffset={Platform.OS === "android" && !isKeyboardVisible ? -top : 0}
       style={[styles.container, style]}
