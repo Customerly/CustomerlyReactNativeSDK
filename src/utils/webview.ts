@@ -34,14 +34,21 @@ export const createHTML = (settings: InternalCustomerlySettings) => {
       customerly.onLeadGenerated = function(email) {
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: "onLeadGenerated",
-          data: {email: email}
+          data: {email}
+        }));
+      };
+
+      customerly.onMessageRead = function(conversationId, conversationMessageId) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: "onMessageRead",
+          data: {conversationId, conversationMessageId}
         }));
       };
       
       customerly.onNewConversation = function(message, attachments) {
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: "onNewConversation",
-          data: {message: message, attachments: attachments}
+          data: {message, attachments}
         }));
       };
       
@@ -55,21 +62,21 @@ export const createHTML = (settings: InternalCustomerlySettings) => {
       customerly.onNewConversationReceived = function(conversationId) {
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: "onNewConversationReceived",
-          data: {conversationId: conversationId}
+          data: {conversationId}
         }));
       };
       
       customerly.onProfilingQuestionAnswered = function(attribute, value) {
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: "onProfilingQuestionAnswered",
-          data: {attribute: attribute, value: value}
+          data: {attribute, value}
         }));
       };
       
       customerly.onProfilingQuestionAsked = function(attribute) {
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: "onProfilingQuestionAsked",
-          data: {attribute: attribute}
+          data: {attribute}
         }));
       };
 

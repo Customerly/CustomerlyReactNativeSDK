@@ -30,6 +30,8 @@
     "build:clean": "rm -rf lib && yarn build",
     "release": "release-it",
     "example": "yarn --cwd example",
+    "example:ios": "yarn --cwd example ios",
+    "example:android": "yarn --cwd example android",
     "prepare": "bob build"
   },
   "dependencies": {},

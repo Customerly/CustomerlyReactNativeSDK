@@ -257,6 +257,7 @@ Customerly.setOnChatClosed(() => {});
 Customerly.setOnChatOpened(() => {});
 Customerly.setOnHelpCenterArticleOpened((article) => {});
 Customerly.setOnLeadGenerated((lead) => {});
+Customerly.setOnMessageRead((conversationId, conversationMessageId) => {});
 Customerly.setOnMessengerInitialized(() => {});
 Customerly.setOnNewConversation((conversationId, attachments) => {});
 Customerly.setOnNewMessageReceived((accountId, message, timestamp, userId, conversationId) => {});
@@ -300,8 +301,8 @@ The repository includes a sample project (`example`) that demonstrates how to in
 
 To run the example:
 1. Run `yarn install` to install the dependencies
-2. Run `yarn ios` to start the iOS simulator
-3. Run `yarn android` to start the Android emulator
+2. Run `yarn example:ios` to start the iOS simulator
+3. Run `yarn example:android` to start the Android emulator
 
 The sample app provides a complete reference implementation of all SDK features and can be used as a starting point for your integration.
 

@@ -228,6 +228,8 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
             registerCallback("onHelpCenterArticleOpened", callback),
           setOnLeadGenerated: (callback: CustomerlyCallbacks["onLeadGenerated"]) =>
             registerCallback("onLeadGenerated", callback),
+          setOnMessageRead: (callback: CustomerlyCallbacks["onMessageRead"]) =>
+            registerCallback("onMessageRead", callback),
           setOnMessengerInitialized: (callback: CustomerlyCallbacks["onMessengerInitialized"]) =>
             registerCallback("onMessengerInitialized", callback),
           setOnNewConversation: (callback: CustomerlyCallbacks["onNewConversation"]) =>
@@ -258,6 +260,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
           removeOnChatOpened: () => removeCallback("onChatOpened"),
           removeOnHelpCenterArticleOpened: () => removeCallback("onHelpCenterArticleOpened"),
           removeOnLeadGenerated: () => removeCallback("onLeadGenerated"),
+          removeOnMessageRead: () => removeCallback("onMessageRead"),
           removeOnMessengerInitialized: () => removeCallback("onMessengerInitialized"),
           removeOnNewConversation: () => removeCallback("onNewConversation"),
           removeOnNewMessageReceived: () => removeCallback("onNewMessageReceived"),
@@ -340,6 +343,13 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
             case "onLeadGenerated": {
               if (message.data?.email) {
                 callbacks?.onLeadGenerated?.(message.data.email);
+              }
+              break;
+            }
+            case "onMessageRead": {
+              if (message.data) {
+                const { conversationId, conversationMessageId } = message.data;
+                callbacks?.onMessageRead?.(conversationId, conversationMessageId);
               }
               break;
             }

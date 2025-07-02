@@ -53,6 +53,9 @@ export const Customerly: SdkMethods & { requestNotificationPermissionIfNeeded: (
   setOnLeadGenerated: guardInstance((callback: CustomerlyCallbacks["onLeadGenerated"]) =>
     messengerRef.current!.setOnLeadGenerated(callback),
   ),
+  setOnMessageRead: guardInstance((callback: CustomerlyCallbacks["onMessageRead"]) =>
+    messengerRef.current!.setOnMessageRead(callback),
+  ),
   setOnMessengerInitialized: guardInstance((callback: CustomerlyCallbacks["onMessengerInitialized"]) =>
     messengerRef.current!.setOnMessengerInitialized(callback),
   ),
@@ -96,6 +99,7 @@ export const Customerly: SdkMethods & { requestNotificationPermissionIfNeeded: (
   removeOnChatOpened: guardInstance(() => messengerRef.current!.removeOnChatOpened()),
   removeOnHelpCenterArticleOpened: guardInstance(() => messengerRef.current!.removeOnHelpCenterArticleOpened()),
   removeOnLeadGenerated: guardInstance(() => messengerRef.current!.removeOnLeadGenerated()),
+  removeOnMessageRead: guardInstance(() => messengerRef.current!.removeOnMessageRead()),
   removeOnMessengerInitialized: guardInstance(() => messengerRef.current!.removeOnMessengerInitialized()),
   removeOnNewConversation: guardInstance(() => messengerRef.current!.removeOnNewConversation()),
   removeOnNewMessageReceived: guardInstance(() => messengerRef.current!.removeOnNewMessageReceived()),

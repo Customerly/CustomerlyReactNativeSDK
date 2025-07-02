@@ -3,6 +3,7 @@ export type CustomerlyCallbacks = {
   onChatOpened?: () => void;
   onHelpCenterArticleOpened?: (article: HelpCenterArticle) => void;
   onLeadGenerated?: (email: string) => void;
+  onMessageRead?: (conversationId: number, conversationMessageId: number) => void;
   onMessengerInitialized?: () => void;
   onNewConversation?: (message: string, attachments: AttachmentPayload[]) => void;
   onNewMessageReceived?: (
