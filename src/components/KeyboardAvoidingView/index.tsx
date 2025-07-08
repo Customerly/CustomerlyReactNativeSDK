@@ -5,47 +5,46 @@ import {
   KeyboardAvoidingView as RNKeyboardAvoidingView,
   KeyboardAvoidingViewProps as RNKeyboardAvoidingViewProps,
   StyleSheet,
-  View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const IosKeyboardAvoidingView = ({ style, ...props }: RNKeyboardAvoidingViewProps) => {
-  return <View style={[styles.container, style]} {...props} />;
-};
+const IosKeyboardAvoidingView = ({ style, ...props }: RNKeyboardAvoidingViewProps) => (
+  <RNKeyboardAvoidingView behavior="padding" style={[styles.flex1, style]} {...props} />
+);
 
 const AndroidKeyboardAvoidingView = ({ style, ...props }: RNKeyboardAvoidingViewProps) => {
-  const { top } = useSafeAreaInsets();
-
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [flexToggle, setFlexToggle] = useState(false);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
-      setIsKeyboardVisible(true);
+      setFlexToggle(false);
     });
+
     const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
-      setIsKeyboardVisible(false);
+      setFlexToggle(true);
     });
 
     return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
+      keyboardDidShowListener?.remove();
+      keyboardDidHideListener?.remove();
     };
   }, []);
 
   return (
     <RNKeyboardAvoidingView
       renderToHardwareTextureAndroid
-      behavior={"height"}
-      keyboardVerticalOffset={Platform.OS === "android" && !isKeyboardVisible ? -top : 0}
-      style={[styles.container, style]}
+      behavior="height"
+      style={[flexToggle ? styles.flexGrow1 : styles.flex1, style]}
       {...props}
     />
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  flex1: {
     flex: 1,
+  },
+  flexGrow1: {
+    flexGrow: 1,
   },
 });
 

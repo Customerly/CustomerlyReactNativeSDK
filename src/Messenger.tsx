@@ -1,4 +1,13 @@
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   AppState,
@@ -6,7 +15,9 @@ import {
   BackHandler,
   Dimensions,
   Easing,
+  Keyboard,
   Linking,
+  Platform,
   StyleSheet,
   useColorScheme,
 } from "react-native";
@@ -48,6 +59,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
     >({});
     const [webViewKey, setWebViewKey] = useState(generateRandomString(10));
     const [backgroundTimestamp, setBackgroundTimestamp] = useState<number | null>(null);
+    const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
 
     const { sendNotificationForNewMessage } = useNotifications({
       notificationChannelId,
@@ -185,6 +197,18 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
 
     const removeAllCallbacks = useCallback(() => {
       setCallbacks({});
+    }, []);
+
+    useLayoutEffect(() => {
+      const keyboardEventSubscription = Keyboard.addListener("keyboardDidShow", () => {
+        if (Platform.OS === "ios") {
+          setScrollEnabled(false);
+        }
+      });
+
+      return () => {
+        keyboardEventSubscription.remove();
+      };
     }, []);
 
     useImperativeHandle(
@@ -474,6 +498,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
               onMessage={handleMessage}
               onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
               ref={webViewRef}
+              scrollEnabled={scrollEnabled}
               sharedCookiesEnabled={true}
               source={{ uri: "https://customerly.io/", baseUrl: "https://customerly.io/", html }}
               thirdPartyCookiesEnabled={true}
