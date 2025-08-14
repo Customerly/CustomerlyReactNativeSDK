@@ -27,6 +27,7 @@ import KeyboardAvoidingView from "./components/KeyboardAvoidingView";
 import { useNotifications } from "./hooks/useNotifications";
 import { CustomerlyCallbacks } from "./typings/callbacks";
 import { CustomerlySettings, InternalCustomerlySettings } from "./typings/customerly-settings";
+import { Message } from "./typings/message";
 import { SdkMethods } from "./typings/sdk-methods";
 import { safelyParseNumber } from "./utils/number";
 import { getInternalSettings } from "./utils/settings";
@@ -390,9 +391,8 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
             }
             case "onNewMessageReceived": {
               if (message.data) {
-                const { accountId, message: msg, timestamp, userId, conversationId } = message.data;
-                await sendNotificationForNewMessage(message.data);
-                callbacks?.onNewMessageReceived?.(accountId, msg, timestamp, userId, conversationId);
+                await sendNotificationForNewMessage(message.data as Message);
+                callbacks?.onNewMessageReceived?.(message.data as Message);
               }
               break;
             }

@@ -1,3 +1,5 @@
+import { Message } from "./message";
+
 export type CustomerlyCallbacks = {
   onChatClosed?: () => void;
   onChatOpened?: () => void;
@@ -6,13 +8,7 @@ export type CustomerlyCallbacks = {
   onMessageRead?: (conversationId: number, conversationMessageId: number) => void;
   onMessengerInitialized?: () => void;
   onNewConversation?: (message: string, attachments: AttachmentPayload[]) => void;
-  onNewMessageReceived?: (
-    accountId: number | undefined,
-    message: string | undefined,
-    timestamp: number,
-    userId: number | undefined,
-    conversationId: number,
-  ) => void;
+  onNewMessageReceived?: (message: Message) => void;
   onNewConversationReceived?: (conversationId: number) => void;
   onProfilingQuestionAnswered?: (attribute: string, value: string) => void;
   onProfilingQuestionAsked?: (attribute: string) => void;
