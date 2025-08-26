@@ -4,7 +4,6 @@ import React, {
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -61,6 +60,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
     const [webViewKey, setWebViewKey] = useState(generateRandomString(10));
     const [backgroundTimestamp, setBackgroundTimestamp] = useState<number | null>(null);
     const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
+    const [html, setHtml] = useState<string>();
 
     const { sendNotificationForNewMessage } = useNotifications({
       notificationChannelId,
@@ -69,7 +69,13 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
     });
 
     const colorScheme = colorSchemeProps ?? defaultColorScheme;
-    const html = useMemo(() => createHTML(settings), [settings]);
+
+    useEffect(() => {
+      (async () => {
+        const html = await createHTML(settings);
+        setHtml(html);
+      })();
+    }, [settings]);
 
     const evaluateJavaScript = useCallback((script: string) => {
       if (!webViewRef.current) {
@@ -467,6 +473,10 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
       Linking.openURL(event.url);
       return false;
     }, []);
+
+    if (!html) {
+      return null;
+    }
 
     return (
       <Animated.View

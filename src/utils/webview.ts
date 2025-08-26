@@ -1,7 +1,23 @@
+import { Platform } from "react-native";
+import DeviceInfo from "react-native-device-info";
 import { InternalCustomerlySettings } from "../typings/customerly-settings";
 
-export const createHTML = (settings: InternalCustomerlySettings) => {
-  const finalSettings = { ...settings, sdkMode: true, disableAutofocus: true };
+export const createHTML = async (settings: InternalCustomerlySettings) => {
+  const os = Platform.OS;
+  const app_name = DeviceInfo.getApplicationName();
+  const app_version = DeviceInfo.getVersion();
+  const device =
+    os === "ios"
+      ? `${await DeviceInfo.getManufacturer()} ${DeviceInfo.getModel()}`
+      : `${await DeviceInfo.getManufacturer()} ${DeviceInfo.getModel()} (${await DeviceInfo.getDevice()})`;
+  const os_version = DeviceInfo.getSystemVersion();
+
+  const finalSettings = {
+    ...settings,
+    sdkMode: true,
+    disableAutofocus: true,
+    device: { os, app_name, app_version, device, os_version },
+  };
 
   return `
 <!DOCTYPE html>

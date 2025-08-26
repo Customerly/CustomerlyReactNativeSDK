@@ -306,6 +306,13 @@ To run the example:
 
 The sample app provides a complete reference implementation of all SDK features and can be used as a starting point for your integration.
 
+## Development
+
+To release a new version of the SDK, you need to:
+
+1. Go to GitHub Actions and run the `Release` workflow
+2. The workflow will build the SDK and release it to npm
+
 ## License
 
 This SDK is licensed under the GNU GPLv3 License. See the LICENSE file for more details.
