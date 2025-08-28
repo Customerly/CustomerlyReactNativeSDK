@@ -30,13 +30,13 @@ yarn add react-native-customerly-sdk
 This library needs these dependencies to be installed in your project before you can use it:
 
 ```bash
-yarn add react-native-webview react-native-safe-area-context @notifee/react-native
+yarn add react-native-webview react-native-safe-area-context @notifee/react-native react-native-device-info
 ```
 
 Using Expo?
 
 ```bash
-npx expo install expo-build-properties react-native-webview react-native-safe-area-context @notifee/react-native
+npx expo install expo-build-properties react-native-webview react-native-safe-area-context @notifee/react-native react-native-device-info
 ```
 
 > **IMPORTANT**
