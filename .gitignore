@@ -10,6 +10,15 @@ yarn-debug.log*
 yarn-error.log*
 .npmrc
 
+# Yarn (Berry, node-modules linker)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
 # VSCode
 .vscode/
 

@@ -1,6 +1,17 @@
 name: Release
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        description: "Semver increment for this release"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+        required: true
 
 jobs:
   release:
@@ -8,9 +19,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Full history + tags so release-it can compute the version and push the tag.
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Initialise the NPM config
         run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
@@ -23,7 +46,7 @@ jobs:
           git config --local user.name "GitHub Action"
 
       - name: Run release
-        run: yarn release --ci
+        run: yarn release ${{ inputs.increment }} --ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -33,6 +33,9 @@ export default tseslint.config([
     extends: [importPlugin.flatConfigs.recommended, importPlugin.flatConfigs.typescript],
     settings: {
       "import/ignore": ["react-native"],
+      react: {
+        version: "detect",
+      },
     },
   },
   tseslint.configs.recommended,
@@ -40,4 +43,10 @@ export default tseslint.config([
   eslintPluginPrettierRecommended,
   jsxA11y.flatConfigs.recommended,
   reactHooks.configs["recommended-latest"],
+  {
+    files: ["**/*.test.{ts,tsx}"],
+    languageOptions: {
+      globals: globals.jest,
+    },
+  },
 ]);
