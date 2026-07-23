@@ -7,7 +7,8 @@ export const abstractify = (html?: string): string => {
     .replace(/<\/[a-zA-Z0-9\s]+>/g, "$& ") // Add spaces after closing tags
     .replace(/<br[\s/]*>/g, "$& ") // Add spaces after <br/> tags
     .replace(/(<([^>]+)>)/gi, "") // Remove HTML tags
-    .replace(/\s+/g, " "); // Replace multiple spaces with single space
+    .replace(/\s+/g, " ") // Replace multiple spaces with single space
+    .trim(); // Drop leading/trailing whitespace left by tag removal
 
   if (!decodedHtml) {
     return "🖼 Image";
