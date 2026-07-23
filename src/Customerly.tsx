@@ -22,6 +22,7 @@ export const Customerly: SdkMethods & { requestNotificationPermissionIfNeeded: (
     await notifee.requestPermission();
   },
   update: guardInstance((settings: CustomerlySettings) => messengerRef.current!.update(settings)),
+  reset: guardInstance(() => messengerRef.current!.reset()),
   show: guardInstance((withoutNavigation?: boolean) => messengerRef.current!.show(withoutNavigation)),
   hide: guardInstance(() => messengerRef.current!.hide()),
   back: guardInstance(() => messengerRef.current!.back()),
@@ -31,11 +32,12 @@ export const Customerly: SdkMethods & { requestNotificationPermissionIfNeeded: (
   ),
   showNewMessage: guardInstance((message: string) => messengerRef.current!.showNewMessage(message)),
   sendNewMessage: guardInstance((message: string) => messengerRef.current!.sendNewMessage(message)),
+  showBookMeeting: guardInstance(() => messengerRef.current!.showBookMeeting()),
   navigateToConversation: guardInstance((conversationId: number) =>
     messengerRef.current!.navigateToConversation(conversationId),
   ),
-  showArticle: guardInstance((collectionSlug: string, articleSlug: string) =>
-    messengerRef.current!.showArticle(collectionSlug, articleSlug),
+  showArticle: guardInstance((collectionSlugOrArticleId: string | number, articleSlug?: string) =>
+    messengerRef.current!.showArticle(collectionSlugOrArticleId, articleSlug),
   ),
   event: guardInstance((name: string) => messengerRef.current!.event(name)),
   attribute: guardInstance((name: string, value: unknown) => messengerRef.current!.attribute(name, value)),

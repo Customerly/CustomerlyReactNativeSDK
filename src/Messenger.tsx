@@ -12,13 +12,13 @@ import {
   AppState,
   AppStateStatus,
   BackHandler,
-  Dimensions,
   Easing,
   Keyboard,
   Linking,
   Platform,
   StyleSheet,
   useColorScheme,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
@@ -28,6 +28,7 @@ import { CustomerlyCallbacks } from "./typings/callbacks";
 import { CustomerlySettings, InternalCustomerlySettings } from "./typings/customerly-settings";
 import { Message } from "./typings/message";
 import { SdkMethods } from "./typings/sdk-methods";
+import { buildJsCall } from "./utils/js";
 import { safelyParseNumber } from "./utils/number";
 import { getInternalSettings } from "./utils/settings";
 import { generateRandomString } from "./utils/string";
@@ -41,22 +42,28 @@ export type MessengerProps = CustomerlySettings & {
 
 const ANIMATION_DURATION = 350;
 const BACKGROUND_RELOAD_TIMEOUT = 4 * 60 * 1000; // 4 minutes in milliseconds
-const screenHeight = Dimensions.get("window").height;
+const JS_INVOCATION_TIMEOUT = 10 * 1000; // 10 seconds
+
+type PendingInvocation = {
+  resolve: (value: unknown) => void;
+  reject: (error: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+};
 
 const Messenger = forwardRef<SdkMethods, MessengerProps>(
   ({ colorScheme: colorSchemeProps, notificationChannelId, notificationChannelName, ...settingsProps }, ref) => {
     const defaultColorScheme = useColorScheme();
+    const { height: screenHeight } = useWindowDimensions();
 
     const webViewRef = useRef<WebView>(null);
     const slideAnimationRef = useRef(new Animated.Value(0)).current;
     const appStateRef = useRef(AppState.currentState);
+    const callbacksRef = useRef<CustomerlyCallbacks>({});
+    const pendingInvocationsRef = useRef<Record<string, PendingInvocation>>({});
 
     const [settings, setSettings] = useState<InternalCustomerlySettings>(getInternalSettings(settingsProps));
+    const settingsRef = useRef(settings);
     const [visible, setVisible] = useState(false);
-    const [callbacks, setCallbacks] = useState<CustomerlyCallbacks>({});
-    const [pendingInvocations, setPendingInvocations] = useState<
-      Record<string, { resolve: (value: unknown) => void; reject: (error: Error) => void }>
-    >({});
     const [webViewKey, setWebViewKey] = useState(generateRandomString(10));
     const [backgroundTimestamp, setBackgroundTimestamp] = useState<number | null>(null);
     const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
@@ -71,18 +78,31 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
     const colorScheme = colorSchemeProps ?? defaultColorScheme;
 
     useEffect(() => {
-      (async () => {
-        const html = await createHTML(settings);
-        setHtml(html);
-      })();
+      settingsRef.current = settings;
     }, [settings]);
+
+    // Generate the messenger HTML on mount and whenever the WebView is remounted
+    // (e.g. after a long background). Settings updates go through
+    // `customerly.update` instead, so they never trigger a full page reload.
+    useEffect(() => {
+      let cancelled = false;
+      (async () => {
+        const generatedHtml = await createHTML(settingsRef.current);
+        if (!cancelled) {
+          setHtml(generatedHtml);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [webViewKey]);
 
     const evaluateJavaScript = useCallback((script: string) => {
       if (!webViewRef.current) {
         throw new Error("WebView is not initialized");
       }
 
-      webViewRef.current?.injectJavaScript(script);
+      webViewRef.current.injectJavaScript(script);
     }, []);
 
     const evaluateJavaScriptAsync = useCallback((script: string) => {
@@ -92,9 +112,16 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
           return;
         }
 
-        const invocationId = Math.random().toString(36).substring(7);
+        const invocationId = generateRandomString(10);
 
-        setPendingInvocations((prev) => ({ ...prev, [invocationId]: { resolve, reject } }));
+        const timer = setTimeout(() => {
+          if (pendingInvocationsRef.current[invocationId]) {
+            delete pendingInvocationsRef.current[invocationId];
+            reject(new Error("Timed out waiting for the WebView response"));
+          }
+        }, JS_INVOCATION_TIMEOUT);
+
+        pendingInvocationsRef.current[invocationId] = { resolve, reject, timer };
 
         const wrappedScript = `
           (async () => {
@@ -119,6 +146,19 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
         webViewRef.current.injectJavaScript(wrappedScript);
       });
     }, []);
+
+    // Reject any in-flight async invocations when the WebView is torn down or
+    // remounted, so their promises never hang forever.
+    useEffect(() => {
+      const pending = pendingInvocationsRef.current;
+      return () => {
+        Object.values(pending).forEach(({ reject, timer }) => {
+          clearTimeout(timer);
+          reject(new Error("WebView was reloaded before the response arrived"));
+        });
+        pendingInvocationsRef.current = {};
+      };
+    }, [webViewKey]);
 
     const checkAndReloadIfNeeded = useCallback(() => {
       if (!backgroundTimestamp) {
@@ -159,7 +199,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
       (withoutNavigation = false) => {
         evaluateJavaScript("customerly.open()");
         if (!withoutNavigation) {
-          evaluateJavaScript("_customerly_sdk.navigate('/', true)");
+          evaluateJavaScript(buildJsCall("_customerly_sdk.navigate", "/", true));
         }
 
         setVisible(true);
@@ -189,32 +229,30 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
 
     const registerCallback = useCallback(
       <T extends keyof CustomerlyCallbacks>(name: T, callback: CustomerlyCallbacks[T]) => {
-        setCallbacks((prev) => ({ ...prev, [name]: callback }));
+        callbacksRef.current[name] = callback;
       },
-      [setCallbacks],
+      [],
     );
 
     const removeCallback = useCallback((name: keyof CustomerlyCallbacks) => {
-      setCallbacks((prev) => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
+      delete callbacksRef.current[name];
     }, []);
 
     const removeAllCallbacks = useCallback(() => {
-      setCallbacks({});
+      callbacksRef.current = {};
     }, []);
 
     useLayoutEffect(() => {
-      const keyboardEventSubscription = Keyboard.addListener("keyboardDidShow", () => {
-        if (Platform.OS === "ios") {
-          setScrollEnabled(false);
-        }
-      });
+      if (Platform.OS !== "ios") {
+        return;
+      }
+
+      const keyboardDidShowSubscription = Keyboard.addListener("keyboardDidShow", () => setScrollEnabled(false));
+      const keyboardDidHideSubscription = Keyboard.addListener("keyboardDidHide", () => setScrollEnabled(true));
 
       return () => {
-        keyboardEventSubscription.remove();
+        keyboardDidShowSubscription.remove();
+        keyboardDidHideSubscription.remove();
       };
     }, []);
 
@@ -222,31 +260,41 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
       ref,
       () =>
         ({
-          update: (settings: CustomerlySettings) =>
-            setSettings((currentSettings) => ({ ...currentSettings, ...getInternalSettings(settings) })),
+          update: (newSettings: CustomerlySettings) => {
+            const internalSettings = getInternalSettings(newSettings);
+            setSettings((currentSettings) => ({ ...currentSettings, ...internalSettings }));
+            evaluateJavaScript(buildJsCall("customerly.update", internalSettings));
+          },
+          // Force a fresh messenger session by remounting the WebView. The HTML
+          // is regenerated from the current settings, so the user stays logged in.
+          reset: () => setWebViewKey(generateRandomString(10)),
           show,
           hide,
           back,
           logout: () => evaluateJavaScript("customerly.logout()"),
           registerLead: (email: string, attributes?: Record<string, unknown>) =>
-            evaluateJavaScript(`customerly.registerLead('${email}', ${JSON.stringify(attributes)})`),
+            evaluateJavaScript(buildJsCall("customerly.registerLead", email, attributes)),
           showNewMessage: (message: string) => {
             show();
-            evaluateJavaScript(`customerly.showNewMessage('${message}')`);
+            evaluateJavaScript(buildJsCall("customerly.showNewMessage", message));
           },
           sendNewMessage: (message: string) => {
             show();
-            evaluateJavaScript(`customerly.sendNewMessage('${message}')`);
+            evaluateJavaScript(buildJsCall("customerly.sendNewMessage", message));
+          },
+          showBookMeeting: () => {
+            show();
+            evaluateJavaScript("customerly.showBookMeeting()");
           },
           navigateToConversation: (conversationId: number) =>
-            evaluateJavaScript(`_customerly_sdk.navigateToConversation(${conversationId})`),
-          showArticle: (collectionSlug: string, articleSlug: string) => {
+            evaluateJavaScript(buildJsCall("_customerly_sdk.navigateToConversation", conversationId)),
+          showArticle: (collectionSlugOrArticleId: string | number, articleSlug?: string) => {
             show();
-            evaluateJavaScript(`customerly.showArticle('${collectionSlug}', '${articleSlug}')`);
+            evaluateJavaScript(buildJsCall("customerly.showArticle", collectionSlugOrArticleId, articleSlug));
           },
-          event: (name: string) => evaluateJavaScript(`customerly.event('${name}')`),
+          event: (name: string) => evaluateJavaScript(buildJsCall("customerly.event", name)),
           attribute: (name: string, value: unknown) =>
-            evaluateJavaScript(`customerly.attribute('${name}', ${JSON.stringify(value)})`),
+            evaluateJavaScript(buildJsCall("customerly.attribute", name, value)),
           getUnreadConversationsCount: async () =>
             safelyParseNumber(await evaluateJavaScriptAsync("customerly.unreadConversationsCount")),
           getUnreadMessagesCount: async () =>
@@ -339,122 +387,118 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
 
           switch (message.type) {
             case "jsInvocationResult": {
-              if (message.id in pendingInvocations) {
-                const { resolve, reject } = pendingInvocations[message.id];
+              const pending = pendingInvocationsRef.current[message.id];
+              if (pending) {
+                clearTimeout(pending.timer);
+                delete pendingInvocationsRef.current[message.id];
 
                 if (message.error) {
-                  reject(new Error(message.error));
+                  pending.reject(new Error(message.error));
                 } else {
-                  resolve(message.result);
+                  pending.resolve(message.result);
                 }
-
-                setPendingInvocations((prev) => {
-                  const next = { ...prev };
-                  delete next[message.id];
-                  return next;
-                });
               }
               break;
             }
             case "onChatClosed": {
               hide();
-              callbacks?.onChatClosed?.();
+              callbacksRef.current.onChatClosed?.();
               break;
             }
             case "onChatOpened": {
-              callbacks?.onChatOpened?.();
+              callbacksRef.current.onChatOpened?.();
               break;
             }
             case "onHelpCenterArticleOpened": {
               if (message.data) {
-                callbacks?.onHelpCenterArticleOpened?.(message.data);
+                callbacksRef.current.onHelpCenterArticleOpened?.(message.data);
               }
               break;
             }
             case "onLeadGenerated": {
               if (message.data?.email) {
-                callbacks?.onLeadGenerated?.(message.data.email);
+                callbacksRef.current.onLeadGenerated?.(message.data.email);
               }
               break;
             }
             case "onMessageRead": {
               if (message.data) {
                 const { conversationId, conversationMessageId } = message.data;
-                callbacks?.onMessageRead?.(conversationId, conversationMessageId);
+                callbacksRef.current.onMessageRead?.(conversationId, conversationMessageId);
               }
               break;
             }
             case "onMessengerInitialized": {
-              callbacks?.onMessengerInitialized?.();
+              callbacksRef.current.onMessengerInitialized?.();
               break;
             }
             case "onNewConversation": {
               if (message.data) {
                 const { message: msg, attachments = [] } = message.data;
-                callbacks?.onNewConversation?.(msg, attachments);
+                callbacksRef.current.onNewConversation?.(msg, attachments);
               }
               break;
             }
             case "onNewMessageReceived": {
               if (message.data) {
                 await sendNotificationForNewMessage(message.data as Message);
-                callbacks?.onNewMessageReceived?.(message.data as Message);
+                callbacksRef.current.onNewMessageReceived?.(message.data as Message);
               }
               break;
             }
             case "onNewConversationReceived": {
               if (message.data?.conversationId) {
-                callbacks?.onNewConversationReceived?.(message.data.conversationId);
+                callbacksRef.current.onNewConversationReceived?.(message.data.conversationId);
               }
               break;
             }
             case "onProfilingQuestionAnswered": {
               if (message.data) {
                 const { attribute, value } = message.data;
-                callbacks?.onProfilingQuestionAnswered?.(attribute, value);
+                callbacksRef.current.onProfilingQuestionAnswered?.(attribute, value);
               }
               break;
             }
             case "onProfilingQuestionAsked": {
               if (message.data?.attribute) {
-                callbacks?.onProfilingQuestionAsked?.(message.data.attribute);
+                callbacksRef.current.onProfilingQuestionAsked?.(message.data.attribute);
               }
               break;
             }
             case "onRealtimeVideoAnswered": {
               if (message.data) {
-                callbacks?.onRealtimeVideoAnswered?.(message.data);
+                callbacksRef.current.onRealtimeVideoAnswered?.(message.data);
               }
               break;
             }
             case "onRealtimeVideoCanceled": {
-              callbacks?.onRealtimeVideoCanceled?.();
+              callbacksRef.current.onRealtimeVideoCanceled?.();
               break;
             }
             case "onRealtimeVideoReceived": {
               show();
               if (message.data) {
-                callbacks?.onRealtimeVideoReceived?.(message.data);
+                callbacksRef.current.onRealtimeVideoReceived?.(message.data);
               }
               break;
             }
             case "onRealtimeVideoRejected": {
-              callbacks?.onRealtimeVideoRejected?.();
+              callbacksRef.current.onRealtimeVideoRejected?.();
               break;
             }
             case "onSurveyAnswered": {
-              callbacks?.onSurveyAnswered?.();
+              callbacksRef.current.onSurveyAnswered?.();
               break;
             }
             case "onSurveyPresented": {
               show(true);
               if (message.data) {
-                callbacks?.onSurveyPresented?.(message.data);
+                callbacksRef.current.onSurveyPresented?.(message.data);
               }
               break;
             }
             case "onSurveyRejected": {
-              callbacks?.onSurveyRejected?.();
+              callbacksRef.current.onSurveyRejected?.();
               break;
             }
           }
@@ -462,7 +506,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
           // Ignore messages that aren't JSON
         }
       },
-      [pendingInvocations, hide, callbacks, sendNotificationForNewMessage, show],
+      [hide, sendNotificationForNewMessage, show],
     );
 
     const handleShouldStartLoadWithRequest = useCallback((event: WebViewNavigation) => {
