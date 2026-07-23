@@ -14,6 +14,17 @@ export type NotificationSetup =
       notificationChannelName?: string;
     };
 
+export type Company = {
+  company_id: string;
+  name: string;
+  additionalAttributes?: Record<string, unknown>;
+};
+
+export type CustomerlyEvent = {
+  name: string;
+  date?: Date;
+};
+
 export type CustomerlySettings = {
   appId: string;
   userId?: string;
@@ -28,8 +39,27 @@ export type CustomerlySettings = {
   forceLead?: boolean;
   attributes?: Record<string, unknown>;
   company?: Company;
-  events?: Event[];
+  events?: CustomerlyEvent[];
   getNotificationSetup?: (message: Message) => NotificationSetup;
+};
+
+/**
+ * Company as the web messenger expects it on the wire: `company_id` and `name`
+ * plus any additional attributes spread at the top level (not nested).
+ */
+export type InternalCompany = {
+  company_id: string;
+  name: string;
+  [attribute: string]: unknown;
+};
+
+/**
+ * Event as the web messenger expects it on the wire: `date` is a Unix timestamp
+ * in seconds rather than a `Date` instance.
+ */
+export type InternalEvent = {
+  name: string;
+  date?: number;
 };
 
 export type InternalCustomerlySettings = {
@@ -45,18 +75,7 @@ export type InternalCustomerlySettings = {
   last_page_viewed?: string;
   force_lead?: boolean;
   attributes?: Record<string, unknown>;
-  company?: Company;
-  events?: Event[];
+  company?: InternalCompany;
+  events?: InternalEvent[];
   getNotificationSetup?: (message: Message) => NotificationSetup;
-};
-
-export type Company = {
-  company_id: string;
-  name: string;
-  additionalAttributes?: Record<string, unknown>;
-};
-
-export type Event = {
-  name: string;
-  date?: Date;
 };
