@@ -1,4 +1,8 @@
+import { AttachmentPayload } from "./attachment-payload";
+import { HelpCenterArticle } from "./help-center-article";
 import { Message } from "./message";
+import { RealtimeCall } from "./realtime-call";
+import { Survey } from "./survey";
 
 export type CustomerlyCallbacks = {
   onChatClosed?: () => void;
@@ -19,39 +23,4 @@ export type CustomerlyCallbacks = {
   onSurveyAnswered?: () => void;
   onSurveyPresented?: (survey: Survey) => void;
   onSurveyRejected?: () => void;
-};
-
-export type HelpCenterArticle = {
-  id: number;
-  title: string;
-  content: string;
-  url: string;
-};
-
-export type AttachmentPayload = {
-  id: string;
-  name: string;
-  url: string;
-  type: string;
-  size: number;
-};
-
-export type RealtimeCall = {
-  id: string;
-  status: string;
-  startTime: number;
-  endTime?: number;
-};
-
-export type Survey = {
-  id: string;
-  title: string;
-  questions: SurveyQuestion[];
-};
-
-export type SurveyQuestion = {
-  id: string;
-  text: string;
-  type: string;
-  options?: string[];
 };

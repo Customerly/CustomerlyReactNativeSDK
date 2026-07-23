@@ -7,6 +7,7 @@ export type RealtimeCallUser = {
 export type RealtimeCall = {
   account: Account;
   url: string;
+  ts: number;
   conversation_id: number;
   user: RealtimeCallUser;
 };

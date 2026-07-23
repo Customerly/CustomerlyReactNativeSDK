@@ -15,4 +15,5 @@ export type HelpCenterArticle = {
   sort: number;
   written_by: WrittenBy;
   updated_at: number;
+  knowledge_base_root_collection_id?: number;
 };
