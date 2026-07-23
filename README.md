@@ -40,7 +40,7 @@ npx expo install expo-build-properties react-native-webview react-native-safe-ar
 ```
 
 > **IMPORTANT**
-> 
+>
 > I want to save you a lot of time here: it seems that the `@notifee/react-native` package is not building correctly with the latest versions of Expo (more info [here](https://github.com/invertase/notifee/issues/799) and [here](https://github.com/invertase/notifee/issues/350)). To ensure it builds correctly, add the following to your `app.json`:
 
 ```json
@@ -68,7 +68,6 @@ npx expo prebuild --clean
 
 This helps avoid build issues, especially after adding or updating native dependencies.
 
-
 ## Basic Usage
 
 Wrap your app with `CustomerlyProvider` (it must be wrapped in a `SafeAreaProvider`) and use the `Customerly` API:
@@ -81,9 +80,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 export default function App() {
   return (
     <SafeAreaProvider>
-      <CustomerlyProvider appId="YOUR_APP_ID">
-        {/* Your app content */}
-      </CustomerlyProvider>
+      <CustomerlyProvider appId="YOUR_APP_ID">{/* Your app content */}</CustomerlyProvider>
     </SafeAreaProvider>
   );
 }
@@ -132,13 +129,29 @@ Customerly.requestNotificationPermissionIfNeeded();
 ### Initialization and Configuration
 
 #### update
-Updates the Customerly SDK settings.
+
+Updates the Customerly SDK settings in place, without restarting the messenger session (the current conversation and state are preserved).
 
 ```tsx
 Customerly.update({ appId: "YOUR_APP_ID" });
 ```
 
+> **Note:** `update` no longer reloads the messenger. If you need a fresh session (the previous behavior), call [`reset`](#reset) — on its own, or after `update` to apply new settings and then restart.
+
+#### reset
+
+Restarts the messenger by reloading it from scratch, creating a fresh session. The messenger is re-initialized with the current settings, so the user stays logged in. Use this if you need the messenger to fully re-initialize (this is what `update` used to do implicitly).
+
+```tsx
+Customerly.reset();
+
+// Apply new settings and restart the session:
+Customerly.update({ appId: "YOUR_APP_ID", userId: "123" });
+Customerly.reset();
+```
+
 #### requestNotificationPermissionIfNeeded
+
 Requests notification permissions if not already granted (uses Notifee).
 
 ```tsx
@@ -148,6 +161,7 @@ Customerly.requestNotificationPermissionIfNeeded();
 ### Messenger Control
 
 #### show
+
 Shows the Customerly chat interface.
 
 ```tsx
@@ -155,6 +169,7 @@ Customerly.show(withoutNavigation?: boolean);
 ```
 
 #### hide
+
 Hides the Customerly chat interface.
 
 ```tsx
@@ -162,6 +177,7 @@ Customerly.hide();
 ```
 
 #### back
+
 Navigates back in the chat interface.
 
 ```tsx
@@ -171,6 +187,7 @@ Customerly.back();
 ### User Management
 
 #### logout
+
 Logs out the current user.
 
 ```tsx
@@ -178,6 +195,7 @@ Customerly.logout();
 ```
 
 #### registerLead
+
 Registers a new lead with the provided email and optional attributes.
 
 ```tsx
@@ -187,6 +205,7 @@ Customerly.registerLead("user@example.com", { name: "John Doe" });
 ### Messaging
 
 #### showNewMessage
+
 Shows the chat interface with a pre-filled message.
 
 ```tsx
@@ -194,13 +213,23 @@ Customerly.showNewMessage("Hello, how can I help you?");
 ```
 
 #### sendNewMessage
+
 Sends a new message and shows the chat interface.
 
 ```tsx
 Customerly.sendNewMessage("Hello, how can I help you?");
 ```
 
+#### showBookMeeting
+
+Opens the "book a meeting" calendar flow in the messenger.
+
+```tsx
+Customerly.showBookMeeting();
+```
+
 #### navigateToConversation
+
 Navigates to a specific conversation.
 
 ```tsx
@@ -210,15 +239,18 @@ Customerly.navigateToConversation(123);
 ### Help Center
 
 #### showArticle
-Shows an article from the help center.
+
+Shows an article from the help center, either by collection + article slug or by numeric article id.
 
 ```tsx
 Customerly.showArticle("collection", "article");
+Customerly.showArticle(123); // by article id
 ```
 
 ### Analytics
 
 #### event
+
 Tracks a custom event.
 
 ```tsx
@@ -226,6 +258,7 @@ Customerly.event("event_name");
 ```
 
 #### attribute
+
 Sets a custom attribute for the current user.
 
 ```tsx
@@ -235,6 +268,7 @@ Customerly.attribute("attribute_name", "attribute_value");
 ### Message Counts
 
 #### getUnreadMessagesCount
+
 Gets the count of unread messages.
 
 ```tsx
@@ -242,6 +276,7 @@ await Customerly.getUnreadMessagesCount();
 ```
 
 #### getUnreadConversationsCount
+
 Gets the count of unread conversations.
 
 ```tsx
@@ -256,14 +291,14 @@ The SDK provides various callbacks for different events. Here are the main callb
 Customerly.setOnChatClosed(() => {});
 Customerly.setOnChatOpened(() => {});
 Customerly.setOnHelpCenterArticleOpened((article) => {});
-Customerly.setOnLeadGenerated((lead) => {});
+Customerly.setOnLeadGenerated((email) => {});
 Customerly.setOnMessageRead((conversationId, conversationMessageId) => {});
 Customerly.setOnMessengerInitialized(() => {});
-Customerly.setOnNewConversation((conversationId, attachments) => {});
+Customerly.setOnNewConversation((message, attachments) => {});
 Customerly.setOnNewMessageReceived((message) => {});
 Customerly.setOnNewConversationReceived((conversationId) => {});
-Customerly.setOnProfilingQuestionAnswered((question, answer) => {});
-Customerly.setOnProfilingQuestionAsked((question) => {});
+Customerly.setOnProfilingQuestionAnswered((attribute, value) => {});
+Customerly.setOnProfilingQuestionAsked((attribute) => {});
 Customerly.setOnRealtimeVideoAnswered((realtimeCall) => {});
 Customerly.setOnRealtimeVideoCanceled(() => {});
 Customerly.setOnRealtimeVideoReceived((realtimeCall) => {});
@@ -271,6 +306,12 @@ Customerly.setOnRealtimeVideoRejected(() => {});
 Customerly.setOnSurveyAnswered(() => {});
 Customerly.setOnSurveyPresented((survey) => {});
 Customerly.setOnSurveyRejected(() => {});
+```
+
+All public types (`CustomerlySettings`, `Message`, `Survey`, `RealtimeCall`, `HelpCenterArticle`, `AttachmentPayload`, `NotificationSetup`, callback payload types, etc.) are exported from the package root for typing your handlers:
+
+```tsx
+import type { CustomerlySettings, Survey } from "react-native-customerly-sdk";
 ```
 
 Each callback has a corresponding remove method:
@@ -300,6 +341,7 @@ The repository includes a sample project (`example`) that demonstrates how to in
 - Callback usage
 
 To run the example:
+
 1. Run `yarn install` to install the dependencies
 2. Run `yarn example:ios` to start the iOS simulator
 3. Run `yarn example:android` to start the Android emulator
