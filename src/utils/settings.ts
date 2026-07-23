@@ -13,17 +13,20 @@ export const getInternalSettings = (settings: CustomerlySettings): InternalCusto
     ...(events && {
       events: events.map(({ name, date }) => ({
         name,
-        // The web messenger expects a Unix timestamp in seconds.
-        date: date ? Math.floor(date.getTime() / 1000) : undefined,
+        // The web messenger expects a Unix timestamp in seconds. Guard against
+        // invalid Date instances (getTime() === NaN) so we never send NaN.
+        date: date && !Number.isNaN(date.getTime()) ? Math.floor(date.getTime() / 1000) : undefined,
       })),
     }),
     ...(company && {
       company: {
-        company_id: company.company_id,
-        name: company.name,
+        // Spread the extra attributes first so a stray `company_id`/`name` inside
+        // additionalAttributes can never clobber the canonical identity fields.
         // The web messenger reads additional company attributes from the top
         // level of the company object, not from a nested property.
         ...company.additionalAttributes,
+        company_id: company.company_id,
+        name: company.name,
       },
     }),
   };
