@@ -5,7 +5,6 @@
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/adaptive-icon.png"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.giorgiozem.example",
       "softwareKeyboardLayoutMode": "pan"
     },
@@ -15,7 +14,6 @@
       "supportsTablet": true
     },
     "name": "example",
-    "newArchEnabled": true,
     "orientation": "portrait",
     "plugins": [
       [
@@ -25,14 +23,10 @@
             "extraMavenRepos": ["../../node_modules/@notifee/react-native/android/libs"]
           }
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "slug": "example",
-    "splash": {
-      "backgroundColor": "#ffffff",
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain"
-    },
     "userInterfaceStyle": "light",
     "version": "1.0.0",
     "web": {
