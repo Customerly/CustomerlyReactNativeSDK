@@ -18,6 +18,7 @@ export type SdkMethods = {
   attribute: (name: string, value: unknown) => void;
   getUnreadMessagesCount: () => Promise<number>;
   getUnreadConversationsCount: () => Promise<number>;
+  requestNotificationPermissionIfNeeded: () => Promise<void>;
   setOnChatClosed: (callback: CustomerlyCallbacks["onChatClosed"]) => void;
   setOnChatOpened: (callback: CustomerlyCallbacks["onChatOpened"]) => void;
   setOnHelpCenterArticleOpened: (callback: CustomerlyCallbacks["onHelpCenterArticleOpened"]) => void;

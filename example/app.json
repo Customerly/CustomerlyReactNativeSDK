@@ -15,17 +15,7 @@
     },
     "name": "example",
     "orientation": "portrait",
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "extraMavenRepos": ["../../node_modules/@notifee/react-native/android/libs"]
-          }
-        }
-      ],
-      "expo-status-bar"
-    ],
+    "plugins": ["react-native-notify-kit", "expo-status-bar"],
     "slug": "example",
     "userInterfaceStyle": "light",
     "version": "1.0.0",

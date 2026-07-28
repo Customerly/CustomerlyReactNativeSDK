@@ -1,4 +1,3 @@
-import notifee from "@notifee/react-native";
 import { createRef } from "react";
 import { CustomerlyCallbacks } from "./typings/callbacks";
 import { CustomerlySettings } from "./typings/customerly-settings";
@@ -6,21 +5,34 @@ import { SdkMethods } from "./typings/sdk-methods";
 
 export const messengerRef = createRef<SdkMethods>();
 
+const NOT_MOUNTED_ERROR_MESSAGE = "CustomerlyProvider is not mounted.";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const guardInstance = <T extends (...args: any[]) => any>(fn: T): T => {
   return ((...args: Parameters<T>) => {
     if (!messengerRef.current) {
-      throw new Error("CustomerlyProvider is not mounted.");
+      throw new Error(NOT_MOUNTED_ERROR_MESSAGE);
     }
 
     return fn(...args);
   }) as T;
 };
 
-export const Customerly: SdkMethods & { requestNotificationPermissionIfNeeded: () => Promise<void> } = {
-  requestNotificationPermissionIfNeeded: async () => {
-    await notifee.requestPermission();
-  },
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const guardInstanceAsync = <T extends (...args: any[]) => Promise<any>>(fn: T): T => {
+  return (async (...args: Parameters<T>) => {
+    if (!messengerRef.current) {
+      throw new Error(NOT_MOUNTED_ERROR_MESSAGE);
+    }
+
+    return await fn(...args);
+  }) as T;
+};
+
+export const Customerly: SdkMethods = {
+  requestNotificationPermissionIfNeeded: guardInstanceAsync(
+    async () => await messengerRef.current!.requestNotificationPermissionIfNeeded(),
+  ),
   update: guardInstance((settings: CustomerlySettings) => messengerRef.current!.update(settings)),
   reset: guardInstance(() => messengerRef.current!.reset()),
   show: guardInstance((withoutNavigation?: boolean) => messengerRef.current!.show(withoutNavigation)),
@@ -41,8 +53,10 @@ export const Customerly: SdkMethods & { requestNotificationPermissionIfNeeded: (
   ),
   event: guardInstance((name: string) => messengerRef.current!.event(name)),
   attribute: guardInstance((name: string, value: unknown) => messengerRef.current!.attribute(name, value)),
-  getUnreadConversationsCount: guardInstance(async () => await messengerRef.current!.getUnreadConversationsCount()),
-  getUnreadMessagesCount: guardInstance(async () => await messengerRef.current!.getUnreadMessagesCount()),
+  getUnreadConversationsCount: guardInstanceAsync(
+    async () => await messengerRef.current!.getUnreadConversationsCount(),
+  ),
+  getUnreadMessagesCount: guardInstanceAsync(async () => await messengerRef.current!.getUnreadMessagesCount()),
   setOnChatClosed: guardInstance((callback: CustomerlyCallbacks["onChatClosed"]) =>
     messengerRef.current!.setOnChatClosed(callback),
   ),

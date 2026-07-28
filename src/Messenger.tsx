@@ -27,6 +27,7 @@ import { useNotifications } from "./hooks/useNotifications";
 import { CustomerlyCallbacks } from "./typings/callbacks";
 import { CustomerlySettings, InternalCustomerlySettings } from "./typings/customerly-settings";
 import { Message } from "./typings/message";
+import { NotificationsModule } from "./typings/notifications";
 import { SdkMethods } from "./typings/sdk-methods";
 import { buildJsCall } from "./utils/js";
 import { safelyParseNumber } from "./utils/number";
@@ -36,7 +37,32 @@ import { createHTML } from "./utils/webview";
 
 export type MessengerProps = CustomerlySettings & {
   colorScheme?: "light" | "dark";
+  /**
+   * The default export of a notifee-compatible notification module, used to
+   * post a local notification for every incoming message.
+   *
+   * Install `react-native-notify-kit` (New Architecture) or the archived
+   * `@notifee/react-native` (legacy architecture) in your app and pass it in.
+   * Leave it out to disable the SDK's notifications entirely — do that if your
+   * app already handles push on its own.
+   *
+   * Pass a **stable reference** — a module import or a module-level constant,
+   * not an object literal created during render. The value is a dependency of
+   * the SDK's notification effects, so a new identity on every render
+   * re-subscribes the foreground listener and re-reads the initial notification.
+   */
+  notificationsModule?: NotificationsModule;
+  /**
+   * The ID of the notification channel to use for notifications. Android only,
+   * and only used when `notificationsModule` is set.
+   * @default "customerly-notification-channel"
+   */
   notificationChannelId?: string;
+  /**
+   * The name of the notification channel to use for notifications. Android only,
+   * and only used when `notificationsModule` is set.
+   * @default "Customerly Notification Channel"
+   */
   notificationChannelName?: string;
 };
 
@@ -51,7 +77,16 @@ type PendingInvocation = {
 };
 
 const Messenger = forwardRef<SdkMethods, MessengerProps>(
-  ({ colorScheme: colorSchemeProps, notificationChannelId, notificationChannelName, ...settingsProps }, ref) => {
+  (
+    {
+      colorScheme: colorSchemeProps,
+      notificationsModule,
+      notificationChannelId,
+      notificationChannelName,
+      ...settingsProps
+    },
+    ref,
+  ) => {
     const defaultColorScheme = useColorScheme();
     const { height: screenHeight } = useWindowDimensions();
 
@@ -69,7 +104,8 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
     const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
     const [html, setHtml] = useState<string>();
 
-    const { sendNotificationForNewMessage } = useNotifications({
+    const { sendNotificationForNewMessage, requestNotificationPermissionIfNeeded } = useNotifications({
+      notificationsModule,
       notificationChannelId,
       notificationChannelName,
       settings,
@@ -299,6 +335,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
             safelyParseNumber(await evaluateJavaScriptAsync("customerly.unreadConversationsCount")),
           getUnreadMessagesCount: async () =>
             safelyParseNumber(await evaluateJavaScriptAsync("customerly.unreadMessagesCount")),
+          requestNotificationPermissionIfNeeded,
           setOnChatClosed: (callback: CustomerlyCallbacks["onChatClosed"]) =>
             registerCallback("onChatClosed", callback),
           setOnChatOpened: (callback: CustomerlyCallbacks["onChatOpened"]) =>
@@ -363,6 +400,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
         registerCallback,
         removeAllCallbacks,
         removeCallback,
+        requestNotificationPermissionIfNeeded,
         show,
       ],
     );

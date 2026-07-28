@@ -1,9 +1,3 @@
-jest.mock("@notifee/react-native", () => ({
-  __esModule: true,
-  default: { requestPermission: jest.fn(async () => ({ authorizationStatus: 1 })) },
-}));
-
-import notifee from "@notifee/react-native";
 import { Customerly, messengerRef } from "../Customerly";
 import { SdkMethods } from "../typings/sdk-methods";
 
@@ -28,11 +22,18 @@ describe("Customerly", () => {
       expect(() => Customerly.showBookMeeting()).toThrow(/not mounted/);
     });
 
-    it("throws synchronously for async-typed methods when not mounted", () => {
+    it("rejects rather than throwing for async-typed methods when not mounted", async () => {
       setRef(null);
-      // The guard runs before the wrapped async fn, so this throws rather than rejects.
-      expect(() => Customerly.getUnreadMessagesCount()).toThrow(/not mounted/);
-      expect(() => Customerly.getUnreadConversationsCount()).toThrow(/not mounted/);
+
+      // Calling them must not throw synchronously — the guard lives inside an
+      // async fn, so callers can `.catch()` instead of wrapping in try/catch.
+      // Building the promises before asserting is what proves that: a
+      // synchronous throw would fail the test right here.
+      const unreadMessages = Customerly.getUnreadMessagesCount();
+      const unreadConversations = Customerly.getUnreadConversationsCount();
+
+      await expect(unreadMessages).rejects.toThrow("CustomerlyProvider is not mounted.");
+      await expect(unreadConversations).rejects.toThrow(/not mounted/);
     });
   });
 
@@ -81,10 +82,22 @@ describe("Customerly", () => {
   });
 
   describe("requestNotificationPermissionIfNeeded", () => {
-    it("is not guarded and calls notifee even without a mounted provider", async () => {
+    it("rejects when the provider is not mounted", async () => {
       setRef(null);
+      // The notification module is injected into the provider, so unlike the
+      // old notifee-importing implementation this now needs a mounted messenger.
+      // Built before asserting so a synchronous throw would fail the test.
+      const pending = Customerly.requestNotificationPermissionIfNeeded();
+
+      await expect(pending).rejects.toThrow("CustomerlyProvider is not mounted.");
+    });
+
+    it("forwards to the mounted messenger", async () => {
+      const requestNotificationPermissionIfNeeded = jest.fn(async () => undefined);
+      setRef({ requestNotificationPermissionIfNeeded });
+
       await expect(Customerly.requestNotificationPermissionIfNeeded()).resolves.toBeUndefined();
-      expect(notifee.requestPermission).toHaveBeenCalledTimes(1);
+      expect(requestNotificationPermissionIfNeeded).toHaveBeenCalledTimes(1);
     });
   });
 });

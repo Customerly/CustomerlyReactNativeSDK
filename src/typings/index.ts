@@ -4,6 +4,7 @@ export * from "./callbacks";
 export type { Company, CustomerlyEvent, CustomerlySettings, NotificationSetup } from "./customerly-settings";
 export * from "./help-center-article";
 export * from "./message";
+export * from "./notifications";
 export * from "./realtime-call";
 export * from "./sdk-methods";
 export * from "./survey";

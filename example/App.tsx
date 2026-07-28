@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, StyleSheet, View } from "react-native";
 // eslint-disable-next-line import/no-unresolved
 import { Customerly, CustomerlyProvider } from "react-native-customerly-sdk";
+import notifee from "react-native-notify-kit";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const App = () => {
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
 export default function AppWrapper() {
   return (
     <SafeAreaProvider>
-      <CustomerlyProvider appId={"YOUR_APP_ID"}>
+      <CustomerlyProvider appId={"YOUR_APP_ID"} notificationsModule={notifee}>
         <App />
       </CustomerlyProvider>
     </SafeAreaProvider>
