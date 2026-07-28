@@ -395,10 +395,17 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
 
     const handleMessage = useCallback(
       async (event: WebViewMessageEvent) => {
-        try {
-          const message = JSON.parse(event.nativeEvent.data);
+        let message;
 
-          switch (message.type) {
+        try {
+          message = JSON.parse(event.nativeEvent.data);
+        } catch {
+          // The page posts messages the SDK does not own, so non-JSON is expected, not an error.
+          return;
+        }
+
+        try {
+          switch (message?.type) {
             case "jsInvocationResult": {
               const pending = pendingInvocationsRef.current[message.id];
               if (pending) {
@@ -454,8 +461,18 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
             }
             case "onNewMessageReceived": {
               if (message.data) {
-                await sendNotificationForNewMessage(message.data as Message);
-                callbacksRef.current.onNewMessageReceived?.(message.data as Message);
+                const newMessage = message.data as Message;
+
+                // A rejected notification must not swallow the host app's callback.
+                try {
+                  await sendNotificationForNewMessage(newMessage);
+                } catch (error) {
+                  if (__DEV__) {
+                    console.warn("[Customerly] Could not post a notification for an incoming message.", error);
+                  }
+                }
+
+                callbacksRef.current.onNewMessageReceived?.(newMessage);
               }
               break;
             }
@@ -515,8 +532,12 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
               break;
             }
           }
-        } catch (_error) {
-          // Ignore messages that aren't JSON
+        } catch (error) {
+          // A throwing host-app callback must not tear down the bridge, but dropping it silently
+          // makes the callback look like it never fired.
+          if (__DEV__) {
+            console.warn(`[Customerly] A handler threw while dispatching "${message?.type}".`, error);
+          }
         }
       },
       [hide, sendNotificationForNewMessage, show],
