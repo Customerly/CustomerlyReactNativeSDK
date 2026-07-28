@@ -1,21 +1,11 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   Animated,
   AppState,
   AppStateStatus,
   BackHandler,
   Easing,
-  Keyboard,
   Linking,
-  Platform,
   StyleSheet,
   useColorScheme,
   useWindowDimensions,
@@ -101,7 +91,6 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
     const [visible, setVisible] = useState(false);
     const [webViewKey, setWebViewKey] = useState(generateRandomString(10));
     const [backgroundTimestamp, setBackgroundTimestamp] = useState<number | null>(null);
-    const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
     const [html, setHtml] = useState<string>();
 
     const { sendNotificationForNewMessage, requestNotificationPermissionIfNeeded } = useNotifications({
@@ -276,20 +265,6 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
 
     const removeAllCallbacks = useCallback(() => {
       callbacksRef.current = {};
-    }, []);
-
-    useLayoutEffect(() => {
-      if (Platform.OS !== "ios") {
-        return;
-      }
-
-      const keyboardDidShowSubscription = Keyboard.addListener("keyboardDidShow", () => setScrollEnabled(false));
-      const keyboardDidHideSubscription = Keyboard.addListener("keyboardDidHide", () => setScrollEnabled(true));
-
-      return () => {
-        keyboardDidShowSubscription.remove();
-        keyboardDidHideSubscription.remove();
-      };
     }, []);
 
     useImperativeHandle(
@@ -590,7 +565,9 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
               onMessage={handleMessage}
               onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
               ref={webViewRef}
-              scrollEnabled={scrollEnabled}
+              // The document is pinned in `createHTML`, so the outer scroll view has nothing to
+              // scroll and only adds ways to displace the page. Content scrolls web-side.
+              scrollEnabled={false}
               sharedCookiesEnabled={true}
               source={{ uri: "https://customerly.io/", baseUrl: "https://customerly.io/", html }}
               thirdPartyCookiesEnabled={true}
