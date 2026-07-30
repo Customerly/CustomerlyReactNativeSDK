@@ -500,4 +500,8 @@ To release a new version of the SDK, you need to:
 
 ## License
 
-This SDK is licensed under the GNU GPLv3 License. See the LICENSE file for more details.
+Copyright 2025-2026 Customerly Ltd.
+
+This SDK is licensed under the [Apache License 2.0](LICENSE) — you are free to use it in commercial and closed-source applications. See the `LICENSE` and `NOTICE` files for details.
+
+> Versions up to and including `2.0.1` were published under the GNU GPLv3. The Apache 2.0 license applies from the next release onwards. If you are pinned to an older version, upgrade to pick up the more permissive terms.

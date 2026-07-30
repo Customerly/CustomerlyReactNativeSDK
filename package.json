@@ -9,6 +9,7 @@
   "files": [
     "src",
     "lib",
+    "NOTICE",
     "!src/**/__tests__"
   ],
   "keywords": [
@@ -23,7 +24,7 @@
   ],
   "repository": "https://github.com/Customerly/CustomerlyReactNativeSDK",
   "author": "Customerly (https://customerly.io)",
-  "license": "GPL-3.0-only",
+  "license": "Apache-2.0",
   "homepage": "https://customerly.io",
   "packageManager": "yarn@4.17.1",
   "scripts": {
