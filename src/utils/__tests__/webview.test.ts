@@ -59,6 +59,13 @@ describe("createHTML", () => {
     expect(html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
   });
 
+  it("forwards messenger load failures to React Native with their status and message", async () => {
+    const html = await createHTML({ app_id: "APP" });
+    expect(html).toContain("customerly.onMessengerLoadFailed = function(failure)");
+    expect(html).toContain('type: "onMessengerLoadFailed"');
+    expect(html).toContain("data: {status: failure && failure.status, message: failure && failure.message}");
+  });
+
   describe("script-tag safety (XSS)", () => {
     it("escapes </script> in a host-supplied value so it cannot break out of the tag", async () => {
       const settings: InternalCustomerlySettings = { app_id: "APP", name: "</script><script>alert(1)</script>" };

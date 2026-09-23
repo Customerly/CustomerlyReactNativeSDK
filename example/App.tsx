@@ -18,6 +18,10 @@ const App = () => {
       setUnreadMessagesCount(messagesCount);
       setUnreadConversationsCount(conversationsCount);
     });
+
+    Customerly.setOnMessengerLoadFailed((failure) => {
+      console.warn("Customerly messenger failed to load", failure);
+    });
   }, []);
 
   return (

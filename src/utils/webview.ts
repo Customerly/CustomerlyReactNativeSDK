@@ -48,6 +48,13 @@ export const createHTML = async (settings: InternalCustomerlySettings) => {
         window.ReactNativeWebView.postMessage(JSON.stringify({type: "onMessengerInitialized"}));
       };
 
+      customerly.onMessengerLoadFailed = function(failure) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: "onMessengerLoadFailed",
+          data: {status: failure && failure.status, message: failure && failure.message}
+        }));
+      };
+
       customerly.onChatClosed = function() {
         window.ReactNativeWebView.postMessage(JSON.stringify({type: "onChatClosed"}));
       };

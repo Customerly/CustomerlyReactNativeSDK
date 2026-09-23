@@ -437,6 +437,7 @@ Customerly.setOnHelpCenterArticleOpened((article) => {});
 Customerly.setOnLeadGenerated((email) => {});
 Customerly.setOnMessageRead((conversationId, conversationMessageId) => {});
 Customerly.setOnMessengerInitialized(() => {});
+Customerly.setOnMessengerLoadFailed(({ status, message }) => {});
 Customerly.setOnNewConversation((message, attachments) => {});
 Customerly.setOnNewMessageReceived((message) => {});
 Customerly.setOnNewConversationReceived((conversationId) => {});
@@ -450,6 +451,8 @@ Customerly.setOnSurveyAnswered(() => {});
 Customerly.setOnSurveyPresented((survey) => {});
 Customerly.setOnSurveyRejected(() => {});
 ```
+
+`setOnMessengerLoadFailed` fires when the messenger can't start, so it never appears. `status` is the HTTP status (`undefined` on network errors): a `401` usually means identity verification is enabled and `emailHash` is missing or invalid.
 
 All public types (`CustomerlySettings`, `Message`, `Survey`, `RealtimeCall`, `HelpCenterArticle`, `AttachmentPayload`, `NotificationSetup`, `NotificationsModule`, callback payload types, etc.) are exported from the package root for typing your handlers:
 

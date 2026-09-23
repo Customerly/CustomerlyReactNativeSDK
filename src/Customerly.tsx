@@ -75,6 +75,9 @@ export const Customerly: SdkMethods = {
   setOnMessengerInitialized: guardInstance((callback: CustomerlyCallbacks["onMessengerInitialized"]) =>
     messengerRef.current!.setOnMessengerInitialized(callback),
   ),
+  setOnMessengerLoadFailed: guardInstance((callback: CustomerlyCallbacks["onMessengerLoadFailed"]) =>
+    messengerRef.current!.setOnMessengerLoadFailed(callback),
+  ),
   setOnNewConversation: guardInstance((callback: CustomerlyCallbacks["onNewConversation"]) =>
     messengerRef.current!.setOnNewConversation(callback),
   ),
@@ -117,6 +120,7 @@ export const Customerly: SdkMethods = {
   removeOnLeadGenerated: guardInstance(() => messengerRef.current!.removeOnLeadGenerated()),
   removeOnMessageRead: guardInstance(() => messengerRef.current!.removeOnMessageRead()),
   removeOnMessengerInitialized: guardInstance(() => messengerRef.current!.removeOnMessengerInitialized()),
+  removeOnMessengerLoadFailed: guardInstance(() => messengerRef.current!.removeOnMessengerLoadFailed()),
   removeOnNewConversation: guardInstance(() => messengerRef.current!.removeOnNewConversation()),
   removeOnNewMessageReceived: guardInstance(() => messengerRef.current!.removeOnNewMessageReceived()),
   removeOnNewConversationReceived: guardInstance(() => messengerRef.current!.removeOnNewConversationReceived()),

@@ -1,6 +1,7 @@
 import { AttachmentPayload } from "./attachment-payload";
 import { HelpCenterArticle } from "./help-center-article";
 import { Message } from "./message";
+import { MessengerLoadFailure } from "./messenger-load-failure";
 import { RealtimeCall } from "./realtime-call";
 import { Survey } from "./survey";
 
@@ -11,6 +12,7 @@ export type CustomerlyCallbacks = {
   onLeadGenerated?: (email: string) => void;
   onMessageRead?: (conversationId: number, conversationMessageId: number) => void;
   onMessengerInitialized?: () => void;
+  onMessengerLoadFailed?: (failure: MessengerLoadFailure) => void;
   onNewConversation?: (message: string, attachments: AttachmentPayload[]) => void;
   onNewMessageReceived?: (message: Message) => void;
   onNewConversationReceived?: (conversationId: number) => void;

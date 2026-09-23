@@ -323,6 +323,8 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
             registerCallback("onMessageRead", callback),
           setOnMessengerInitialized: (callback: CustomerlyCallbacks["onMessengerInitialized"]) =>
             registerCallback("onMessengerInitialized", callback),
+          setOnMessengerLoadFailed: (callback: CustomerlyCallbacks["onMessengerLoadFailed"]) =>
+            registerCallback("onMessengerLoadFailed", callback),
           setOnNewConversation: (callback: CustomerlyCallbacks["onNewConversation"]) =>
             registerCallback("onNewConversation", callback),
           setOnNewMessageReceived: (callback: CustomerlyCallbacks["onNewMessageReceived"]) =>
@@ -353,6 +355,7 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
           removeOnLeadGenerated: () => removeCallback("onLeadGenerated"),
           removeOnMessageRead: () => removeCallback("onMessageRead"),
           removeOnMessengerInitialized: () => removeCallback("onMessengerInitialized"),
+          removeOnMessengerLoadFailed: () => removeCallback("onMessengerLoadFailed"),
           removeOnNewConversation: () => removeCallback("onNewConversation"),
           removeOnNewMessageReceived: () => removeCallback("onNewMessageReceived"),
           removeOnNewConversationReceived: () => removeCallback("onNewConversationReceived"),
@@ -452,6 +455,10 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
               callbacksRef.current.onMessengerInitialized?.();
               break;
             }
+            case "onMessengerLoadFailed": {
+              callbacksRef.current.onMessengerLoadFailed?.(message.data ?? {});
+              break;
+            }
             case "onNewConversation": {
               if (message.data) {
                 const { message: msg, attachments = [] } = message.data;
@@ -548,7 +555,11 @@ const Messenger = forwardRef<SdkMethods, MessengerProps>(
         return true;
       }
 
-      Linking.openURL(event.url);
+      Linking.openURL(event.url).catch((error) => {
+        if (__DEV__) {
+          console.warn(`[Customerly] Could not open "${event.url}".`, error);
+        }
+      });
       return false;
     }, []);
 
