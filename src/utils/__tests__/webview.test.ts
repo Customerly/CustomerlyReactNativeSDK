@@ -12,6 +12,7 @@ jest.mock("react-native-device-info", () => ({
 }));
 
 import { Platform } from "react-native";
+import { SDK_VERSION } from "../../constants/version";
 import { InternalCustomerlySettings } from "../../typings/customerly-settings";
 import { createHTML } from "../webview";
 
@@ -35,6 +36,7 @@ describe("createHTML", () => {
     expect(html).toContain('"app_version":"2.3.4"');
     expect(html).toContain('"os_version":"17.4"');
     expect(html).toContain('"os":"ios"');
+    expect(html).toContain(`"sdk_version":"${SDK_VERSION}"`);
   });
 
   it("formats the iOS device string as '<manufacturer> <model>'", async () => {

@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import DeviceInfo from "react-native-device-info";
+import { SDK_VERSION } from "../constants/version";
 import { InternalCustomerlySettings } from "../typings/customerly-settings";
 
 /**
@@ -26,7 +27,7 @@ export const createHTML = async (settings: InternalCustomerlySettings) => {
     ...settings,
     sdkMode: true,
     disableAutofocus: true,
-    device: { os, app_name, app_version, device, os_version },
+    device: { os, app_name, app_version, device, os_version, sdk_version: SDK_VERSION },
   };
 
   return `
